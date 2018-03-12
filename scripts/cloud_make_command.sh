@@ -1,0 +1,1 @@
+../deps/autbase-scripts/cloud_make_command.sh

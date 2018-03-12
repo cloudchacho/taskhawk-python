@@ -1,0 +1,1 @@
+../../deps/autbase-scripts/jenkins/env-setup.sh

@@ -1,0 +1,1 @@
+../deps/autbase-scripts/setup.sh

@@ -1,0 +1,1 @@
+../deps/autbase-scripts/real_cloud_command.sh

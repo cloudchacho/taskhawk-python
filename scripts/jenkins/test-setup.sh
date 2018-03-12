@@ -1,0 +1,1 @@
+../../deps/autbase-scripts/jenkins/test-setup.sh
