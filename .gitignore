@@ -1,0 +1,117 @@
+### Intellij ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
+
+*.iml
+src/*.iml
+
+## Directory-based project format:
+
+# User-specific stuff:
+.idea/
+src/.idea/workspace.xml
+src/.idea/*.xml
+src/.idea/dictionaries
+src/.idea/.name
+
+# Sensitive or high-churn files:
+src/.idea/dataSources.ids
+src/.idea/dataSources.xml
+src/.idea/sqlDataSources.xml
+src/.idea/dynamic.xml
+src/.idea/uiDesigner.xml
+src/.idea/compiler.xml
+src/.idea/copyright
+src/.idea/scopes
+
+
+# Gradle:
+src/.idea/gradle.xml
+src/.idea/libraries
+
+# Mongo Explorer plugin:
+src/.idea/mongoSettings.xml
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+
+# Development environment
+dev/
+venv/
+pypy/
+test/
+var/
+src/.env*
+vagrant/.vagrant/
+profile
+src/local_profile
+src/access_token.txt
+src/.coverage
+
+# Environment Path
+static/
+media/
+*.db
+
+# Vim
+.*.sw*
+
+# Generated files
+*.pyc
+*.log
+
+# Netbeans
+nbprojects/
+
+# Mac related
+.DS_Store
+
+*.espressostorage
+
+# Eclipse
+.project
+.pydevproject
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Django Pipeline
+modechoice/collected_static/
+
+# Emacs
+*~
+
+# ignore sass-cache
+.sass-cache
+
+*.rdb
+
+# testing and updating
+bower_components
+node_modules
+results.json
+
+vm/.vagrant
+
+# internal dependencies
+deps/
+
+
+# python
+.eggs
+.cache
+*.egg-info
+build
+dist

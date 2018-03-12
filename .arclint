@@ -1,0 +1,26 @@
+{
+    "linters": {
+        "pep": {
+            "type": "flake8",
+            "include": "(\\.py$)",
+            "severity": {
+                "E221": "disabled",
+                "E401": "warning",
+                "E501": "disabled",
+                "E265": "disabled",
+                "E731": "disabled"
+            }
+        },
+        "text": {
+            "type": "text",
+            "include": "(\\.(txt|py|html?)$)",
+            "exclude": [
+                "(migrations/.*py$)",
+                "(requirements(/.*|\\.)txt$)",
+                "(^contrib/)",
+                "(^src/contrib/)"
+            ],
+            "text.max-line-length": 120
+        }
+    }
+}
