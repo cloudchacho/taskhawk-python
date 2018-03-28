@@ -108,6 +108,8 @@ vm/.vagrant
 # internal dependencies
 deps/
 
+# pytest
+.pytest_cache
 
 # python
 .eggs

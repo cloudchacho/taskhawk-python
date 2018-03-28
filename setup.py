@@ -53,6 +53,8 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
+    python_requires='>=3.6',
+
     keywords='python taskhawk',
 
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'tests.*']),
