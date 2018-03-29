@@ -6,6 +6,7 @@ MAIN_APP:=${PROJECT}
 APP_TYPE:=python-lib
 AUTO_VERSION:=false
 PYTHON_VERSION:=3.6.4
+PYTHON_VERSIONS:=3.6.4
 
 export PROJECT
 export DATE
@@ -15,6 +16,7 @@ export MAIN_APP
 export APP_TYPE
 export AUTO_VERSION
 export PYTHON_VERSION
+export PYTHON_VERSIONS
 
 .PHONY: test update_deps
 
@@ -26,6 +28,9 @@ test: clean test_setup
 
 update_deps:
 	./scripts/update-deps.sh
+
+pip_compile:
+	./scripts/pip-compile.sh
 
 jenkins_diff_setup: update_deps
 	./scripts/jenkins/diff-git-setup.sh
