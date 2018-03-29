@@ -209,7 +209,7 @@ How to release
 Release notes
 -------------
 
-**Current version: v1.0.0-dev**
+**Current version: v1.0.0**
 
 v1.0.0
 ~~~~~~
