@@ -91,7 +91,7 @@ required; string
 
 **AWS_ACCOUNT_ID**
 
-AWS account id (ask @ops if unsure)
+AWS account id
 
 required; string
 
