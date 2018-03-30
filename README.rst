@@ -215,7 +215,7 @@ How to release
 Release notes
 -------------
 
-**Current version: v1.0.1-dev**
+**Current version: v1.0.1**
 
 v1.0.0
 ~~~~~~
