@@ -28,7 +28,8 @@ def _get_sns_client():
         region_name=settings.AWS_REGION,
         aws_access_key_id=settings.AWS_ACCESS_KEY,
         aws_secret_access_key=settings.AWS_SECRET_KEY,
-        config=config
+        aws_session_token=settings.AWS_SESSION_TOKEN,
+        config=config,
     )
 
 

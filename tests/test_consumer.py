@@ -7,22 +7,12 @@ import pytest
 from taskhawk import consumer
 from taskhawk.conf import settings
 from taskhawk.consumer import (
-    fetch_and_process_messages, _get_sqs_resource, _load_and_validate_message, get_queue_name, message_handler,
+    fetch_and_process_messages, _load_and_validate_message, get_queue_name, message_handler,
     listen_for_messages, message_handler_lambda, process_messages_for_lambda_consumer, message_handler_sqs,
     get_queue, get_queue_messages, WAIT_TIME_SECONDS
 )
 from taskhawk.models import Priority
 from taskhawk.exceptions import RetryException, ValidationError
-
-
-@mock.patch('taskhawk.consumer.boto3', autospec=True)
-def test__get_sqs_resource(mock_boto):
-    assert mock_boto.resource.return_value == _get_sqs_resource()
-    mock_boto.resource.assert_called_once_with(
-        'sqs',
-        region_name=settings.AWS_REGION,
-        aws_access_key_id=settings.AWS_ACCESS_KEY,
-        aws_secret_access_key=settings.AWS_SECRET_KEY)
 
 
 @mock.patch('taskhawk.consumer._get_sqs_resource', autospec=True)

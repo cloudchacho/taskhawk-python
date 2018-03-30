@@ -5,6 +5,7 @@ import typing
 import boto3
 import boto3.resources.base
 import boto3.resources.model
+from botocore.config import Config
 
 try:
     from django import db
@@ -23,11 +24,21 @@ logger = logging.getLogger(__name__)
 
 
 def _get_sqs_resource():
+    # https://botocore.readthedocs.io/en/stable/reference/config.html
+    # seconds
+    config = Config(
+        connect_timeout=settings.AWS_CONNECT_TIMEOUT_S,
+        read_timeout=settings.AWS_READ_TIMEOUT_S,
+    )
+
     return boto3.resource(
         'sqs',
         region_name=settings.AWS_REGION,
         aws_access_key_id=settings.AWS_ACCESS_KEY,
-        aws_secret_access_key=settings.AWS_SECRET_KEY)
+        aws_secret_access_key=settings.AWS_SECRET_KEY,
+        aws_session_token=settings.AWS_SESSION_TOKEN,
+        config=config,
+    )
 
 
 def get_queue(queue_name: str):

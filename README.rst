@@ -97,7 +97,7 @@ required; string
 
 **AWS_ACCESS_KEY**
 
-AWS access key (ask @ops if you don't have one)
+AWS access key
 
 required; string
 
@@ -115,9 +115,15 @@ optional; int; default: 2
 
 **AWS_SECRET_KEY**
 
-AWS secret key (ask @ops if you don't have one)
+AWS secret key
 
 required; string
+
+**AWS_SESSION_TOKEN**
+
+AWS session token that represents temporary credentials (for example, for Lambda apps)
+
+optional; string
 
 **IS_LAMBDA_APP**
 

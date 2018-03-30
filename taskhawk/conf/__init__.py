@@ -11,6 +11,7 @@ _DEFAULTS = {
     'AWS_CONNECT_TIMEOUT_S': 2,
     'AWS_READ_TIMEOUT_S': 2,
     'AWS_SECRET_KEY': None,
+    'AWS_SESSION_TOKEN': None,
     'IS_LAMBDA_APP': False,
     'TASKHAWK_DEFAULT_HEADERS': 'taskhawk.conf.default_headers_hook',
     'TASKHAWK_MAX_DB_REUSE_LOOPS': 5,
