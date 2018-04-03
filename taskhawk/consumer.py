@@ -100,7 +100,7 @@ def message_handler_lambda(lambda_record: dict) -> None:
     message_handler(message_json, receipt)
 
 
-def get_queue_messages(queue, num_messages: int, visibility_timeout: int = None):
+def get_queue_messages(queue, num_messages: int, visibility_timeout: int = None) -> list:
     params = {
         'MaxNumberOfMessages': num_messages,
         'WaitTimeSeconds': WAIT_TIME_SECONDS,
@@ -122,7 +122,7 @@ def get_queue_name(priority: Priority) -> str:
     return name
 
 
-def fetch_and_process_messages(queue_name: str, queue, num_messages: int = 1, visibility_timeout: int = None):
+def fetch_and_process_messages(queue_name: str, queue, num_messages: int = 1, visibility_timeout: int = None) -> None:
 
     for queue_message in get_queue_messages(queue, num_messages, visibility_timeout=visibility_timeout):
         settings.TASKHAWK_PRE_PROCESS_HOOK(queue_name=queue_name, sqs_queue_message=queue_message)
@@ -178,19 +178,18 @@ def listen_for_messages(
 
     task_fn(*args, **kwargs).
 
-    If `task_fn` accepts a param called `taskhawk_metadata`, it'll be passed in with a dict containing the metadata
-    fields: id, version, header, receipt.
+    If `task_fn` accepts a param called `metadata`, it'll be passed in with a dict containing the metadata
+    fields: id, timestamp, version, receipt.
 
     The message is explicitly deleted only if task function ran successfully. In case of an exception the message is
-    kept on queue and processed again. If the callback keeps failing, SQS dead letter queue mechanism kicks in and
+    kept on queue and processed again. If the task function keeps failing, SQS dead letter queue mechanism kicks in and
     the message is moved to the dead-letter queue.
 
     :param priority: The priority queue to listen to
     :param num_messages: Maximum number of messages to fetch in one SQS API call. Defaults to 1
     :param visibility_timeout_s: The number of seconds the message should remain invisible to other queue readers.
         Defaults to None, which is queue default
-    :param loop_count: How many times to fetch messages from SQS. Default to None, which means loop forever. Only
-        applies to Django apps
+    :param loop_count: How many times to fetch messages from SQS. Default to None, which means loop forever.
     """
     queue_name = get_queue_name(priority)
 

@@ -98,14 +98,14 @@ class Task:
                 self._accepts_metadata = self._accepts_headers = True
             elif p.kind == inspect.Parameter.VAR_POSITIONAL:
                 # disallow use of *args
-                raise ConfigurationError
+                raise ConfigurationError("Use of *args is now allowed")
             elif p.name == 'metadata':
                 if p.annotation is not inspect.Signature.empty and p.annotation is not dict:
-                    raise ConfigurationError
+                    raise ConfigurationError("Signature for 'metadata' param must be dict")
                 self._accepts_metadata = True
             elif p.name == 'headers':
                 if p.annotation is not inspect.Signature.empty and p.annotation is not dict:
-                    raise ConfigurationError
+                    raise ConfigurationError("Signature for 'headers' param must be dict")
                 self._accepts_headers = True
 
     @property

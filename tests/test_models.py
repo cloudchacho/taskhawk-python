@@ -14,7 +14,7 @@ class TestMessageMethods:
     publisher = 'myapi'
 
     @mock.patch('taskhawk.models.time.time', autospec=True)
-    def test_create_header(self, mock_time):
+    def test_create_metadata(self, mock_time):
         mock_time.return_value = time.time()
 
         assert Message._create_metadata() == {
@@ -23,10 +23,12 @@ class TestMessageMethods:
         }
 
     def test_new(self, message_data):
-        message = Message(message_data)
+        message = Message.new(
+            message_data['task'], message_data['args'], message_data['kwargs'], message_data['id'],
+            message_data['headers'],
+        )
 
         assert message.id == message_data['id']
-        assert message.metadata == message_data['metadata']
         assert message.headers == message_data['headers']
         assert message.task_name == message_data['task']
         assert message.args == message_data['args']
