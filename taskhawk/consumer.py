@@ -200,7 +200,7 @@ def listen_for_messages(
             fetch_and_process_messages(
                 queue_name, queue, num_messages=num_messages, visibility_timeout=visibility_timeout_s)
             db_reuse_count += 1
-            if db_reuse_count >= getattr(settings, 'TASKHAWK_MAX_DB_REUSE_LOOPS', 5):
+            if db_reuse_count >= settings.TASKHAWK_MAX_DB_REUSE_LOOPS:
                 _close_database()
                 db_reuse_count = 0
     else:
