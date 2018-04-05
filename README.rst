@@ -196,22 +196,6 @@ behavior of tasks.
 
 optional; fully-qualified class name
 
-How to release
---------------
-
-1. Edit code, get it code reviewed, and land it
-#. Edit ``README.rst``:
-
-   - Update ``Release notes`` - add a new section for the version you're going to release, and create an empty
-     ``unreleased`` section
-   - Update ``Migration guide`` if applicable.
-
-3. Push changes
-#. Execute https://jenkins.automatic.co/job/taskhawk-python-RELEASE/ with appropriate params (contact an admin if you
-   don't have permissions).
-#. Verify new version was uploaded successfully here: https://pypi.automatic.co/#/package/taskhawk
-#. Publish Github Release: https://github.com/Automatic/taskhawk-python/releases/
-
 Release notes
 -------------
 
@@ -224,10 +208,6 @@ v1.0.0
 
 Migration guide
 ---------------
-
-Since this is now a library rather than subtree, migration is much simpler. Simply run ``make vupgrade_requirement
-pkg=taskhawk`` to update requirement files. If migrating across major/minor versions, check below for any specific
-steps needed.
 
 CELERY -> v1.0.0
 ~~~~~~~~~~~~~~~~
