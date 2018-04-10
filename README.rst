@@ -199,7 +199,7 @@ optional; fully-qualified class name
 Release notes
 -------------
 
-**Current version: v1.0.2-dev**
+**Current version: v1.0.2**
 
 v1.0.0
 ~~~~~~
