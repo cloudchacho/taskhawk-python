@@ -94,7 +94,7 @@ def _convert_to_json(data: dict) -> str:
     return json.dumps(data, default=_decimal_json_default)
 
 
-def publish(message: Message, priority: Priority=Priority.default) -> None:
+def publish(message: Message) -> None:
     """
     Publishes a message on Taskhawk queue
     """
@@ -102,10 +102,10 @@ def publish(message: Message, priority: Priority=Priority.default) -> None:
     payload = _convert_to_json(message_body)
 
     if settings.IS_LAMBDA_APP:
-        topic = _get_sns_topic(priority)
+        topic = _get_sns_topic(message.priority)
         _publish_over_sns(topic, payload, message.headers)
     else:
-        queue_name = get_queue_name(priority)
+        queue_name = get_queue_name(message.priority)
         queue = get_queue(queue_name)
         _publish_over_sqs(queue, payload, message.headers)
 

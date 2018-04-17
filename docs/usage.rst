@@ -19,12 +19,15 @@ called with a ``metadata`` parameter as a dict with the following attributes:
 
 **id**: task identifier. This represents a run of a task.
 
-**version**: message format version. Currently can only be 1.
+**priority**: the priority a task was dispatched with. This will be same as task's priority, unless priority was
+customized on dispatch.
+
+**receipt**: SQS receipt for the task. This may be used to extend message visibility if the task is running longer
+than expected using ``taskhawk.extend_visibility_timeout``.
 
 **timestamp**: task dispatch epoch timestamp (milliseconds)
 
-**receipt**: SQS receipt for the task. This may be used to extend message visibility if the task is running longer
-than expected.
+**version**: message format version. Currently can only be 1.
 
 If your task function accepts an kwarg called ``headers`` (of type ``dict``) or ``**kwargs``, the function will be
 called with a ``headers`` parameter which is dict that the task was dispatched with.

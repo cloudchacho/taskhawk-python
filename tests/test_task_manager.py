@@ -80,7 +80,25 @@ def test_async_invocation_dispatch(mock_message_new, mock_publish, invocation, m
     invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
 
     mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
-    mock_publish.assert_called_once_with(mock_message_new.return_value, Priority.default)
+    mock_publish.assert_called_once_with(mock_message_new.return_value)
+    assert mock_message_new.return_value.priority == Priority.default
+
+
+@mock.patch('taskhawk.task_manager.publish', autospec=True)
+@mock.patch('taskhawk.Message.new')
+def test_async_invocation_dispatch_custom_priority(mock_message_new, mock_publish, invocation, message):
+    invocation = invocation.with_priority(Priority.high)
+
+    args = ('example@email.com', 'Hello!')
+    kwargs = {'from_email': 'example@spammer.com'}
+
+    mock_message_new.return_value.as_dict.return_value = message.as_dict()
+
+    invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
+
+    mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
+    mock_publish.assert_called_once_with(mock_message_new.return_value)
+    assert mock_message_new.return_value.priority == Priority.high
 
 
 @mock.patch('uuid.uuid4')
@@ -103,7 +121,7 @@ def test_async_invocation_dispatch_default_headers(mock_message_new, mock_publis
     mock_message_new.assert_called_once_with(
         invocation._task.name, args, kwargs, headers={'request_id': mock_uuid.return_value}
     )
-    mock_publish.assert_called_once_with(mock_message_new.return_value, Priority.default)
+    mock_publish.assert_called_once_with(mock_message_new.return_value)
 
 
 @mock.patch('taskhawk.Message.new')

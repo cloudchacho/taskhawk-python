@@ -82,11 +82,12 @@ class AsyncInvocation:
             copy.deepcopy(kwargs),
             headers={**settings.TASKHAWK_DEFAULT_HEADERS(), **self._headers},
         )
+        message.priority = self._priority or self._task.priority
         if settings.TASKHAWK_SYNC:
             message.validate()
             message.call_task(None)
         else:
-            publish(message, self._priority or self._task.priority)
+            publish(message)
 
 
 class Task:

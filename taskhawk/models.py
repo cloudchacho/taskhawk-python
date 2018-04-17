@@ -20,6 +20,7 @@ class Message:
         {
             "id": "b1328174-a21c-43d3-b303-964dfcc76efc",
             "metadata": {
+                "priority": "high",
                 "timestamp": 1460868253255,
                 "version": "1.0"
             },
@@ -64,6 +65,7 @@ class Message:
     @classmethod
     def _create_metadata(cls) -> dict:
         return {
+            'priority': Priority.default.name,
             'timestamp': int(time.time() * 1000),
             'version': cls.CURRENT_VERSION
         }
@@ -113,6 +115,14 @@ class Message:
     @property
     def version(self) -> int:
         return self._metadata.get('version')
+
+    @property
+    def priority(self) -> 'taskhawk.Priority':
+        return Priority[self._metadata['priority']]
+
+    @priority.setter
+    def priority(self, value: 'taskhawk.Priority') -> None:
+        self._metadata['priority'] = value.name
 
     @property
     def headers(self) -> dict:

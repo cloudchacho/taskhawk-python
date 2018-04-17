@@ -5,7 +5,7 @@ import uuid
 import funcy
 import pytest
 
-from taskhawk import ValidationError, TaskNotFound
+from taskhawk import ValidationError, TaskNotFound, Priority
 from taskhawk.models import Message
 from .tasks import send_email
 
@@ -18,6 +18,7 @@ class TestMessageMethods:
         mock_time.return_value = time.time()
 
         assert Message._create_metadata() == {
+            'priority': Priority.default.name,
             'timestamp': int(mock_time.return_value * 1000),
             'version': Message.CURRENT_VERSION,
         }

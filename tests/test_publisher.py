@@ -83,12 +83,12 @@ def test__convert_to_json_decimal(message_with_decimal):
 def test_publish_non_lambda(mock_publish_over_sqs, mock_convert_to_json, mock_get_queue, mock_get_queue_name, message):
     assert settings.TASKHAWK_QUEUE
     sqs_id = str(uuid.uuid4())
-    priority = Priority.high
+    message.priority = Priority.high
     mock_publish_over_sqs.return_value = {'MessageId': sqs_id}
 
-    publish(message, priority)
+    publish(message)
 
-    mock_get_queue_name.assert_called_once_with(priority)
+    mock_get_queue_name.assert_called_once_with(message.priority)
     mock_get_queue.assert_called_once_with(mock_get_queue_name.return_value)
     mock_publish_over_sqs.assert_called_once_with(
         mock_get_queue.return_value,
@@ -104,12 +104,12 @@ def test_publish_lambda(mock_publish_over_sns, mock_convert_to_json, message, se
     settings.IS_LAMBDA_APP = True
 
     sns_id = str(uuid.uuid4())
-    priority = Priority.high
+    message.priority = Priority.high
     mock_publish_over_sns.return_value = {'MessageId': sns_id}
 
-    publish(message, priority)
+    publish(message)
 
-    topic = _get_sns_topic(priority)
+    topic = _get_sns_topic(message.priority)
     mock_publish_over_sns.assert_called_once_with(
         topic,
         mock_convert_to_json.return_value,
