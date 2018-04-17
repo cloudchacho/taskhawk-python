@@ -45,8 +45,6 @@ bumpversion --verbose release
 
 released_version=$(git tag -l --points-at HEAD)
 
-echo "NAME=${released_version}" > build.props
-
 ./scripts/distribute.sh
 
 # prep next dev version
@@ -55,5 +53,3 @@ bumpversion --verbose patch --no-tag
 git push upstream new_master:master --tags
 
 git checkout master
-
-git branch -D new_master
