@@ -11,3 +11,5 @@ fi
 options="${target} ${options}"
 
 python3 -bb -m pytest ${options}
+
+flake8
