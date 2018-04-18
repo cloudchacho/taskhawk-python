@@ -61,7 +61,7 @@ A consumer for SQS based workers can be started as following:
   taskhawk.listen_for_messages(taskhawk.Priority.high)
 
 This is a blocking function, so if you want to listen to multiple priority queues, you'll need to run these on
-separate processes (don't use threads since this library isn't guaranteed to be thread-safe).
+separate processes (don't use threads since this library is **NOT** guaranteed to be thread-safe).
 
 A consumer for Lambda based workers can be started as following:
 

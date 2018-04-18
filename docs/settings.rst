@@ -77,7 +77,7 @@ optional; int; default: 5
 
 **TASKHAWK_PRE_PROCESS_HOOK**
 
-A function which can used to plug into the message processing pipeline //before// any processing happens. This hook
+A function which can used to plug into the message processing pipeline *before* any processing happens. This hook
 may be used to perform initializations such as set up a global request id based on message headers. If
 specified, this will be called with the following arguments for SQS apps:
 

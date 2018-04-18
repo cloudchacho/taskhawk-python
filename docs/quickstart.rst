@@ -34,13 +34,21 @@ Required settings are:
 
 .. code:: python
 
-    AWS_ACCESS_KEY = YOUR AWS KEY
-    AWS_ACCOUNT_ID = YOUR AWS ACCOUNT ID
-    AWS_REGION = YOUR AWS REGION
-    AWS_SECRET_KEY = YOUR AWS SECRET KEY
+    AWS_ACCESS_KEY = <YOUR AWS KEY>
+    AWS_ACCOUNT_ID = <YOUR AWS ACCOUNT ID>
+    AWS_REGION = <YOUR AWS REGION>
+    AWS_SECRET_KEY = <YOUR AWS SECRET KEY>
 
-    TASKHAWK_QUEUE = YOUR APP TASKHAWK QUEUE
+    TASKHAWK_QUEUE = <YOUR APP TASKHAWK QUEUE>
 
+
+Provisioning
+------------
+
+Taskhawk works on SQS and SNS as backing queues. Before you can publish tasks, you
+need to provision the required infra. This may be done manually, or, preferably,
+using Terraform. Taskhawk provides tools to make infra configuration easier: see
+Terraform_ and `Taskhawk Terraform Generator`_ for further details.
 
 Using Taskhawk
 --------------
@@ -64,7 +72,13 @@ Tasks are held in SQS queue until they're successfully executed, or until they f
 configurable number of times. Failed tasks are moved to a Dead Letter Queue, where they're
 held for 14 days, and may be examined for further debugging.
 
+Priority
+--------
+
 Taskhawk provides 4 priority queues to use, which may be customized per task, or per message.
+For more details, see :class:`taskhawk.Priority`.
 
 .. _Github: https://github.com/Automatic/taskhawk-python
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
+.. _Terraform: https://github.com/Automatic/taskhawk-terraform
+.. _Taskhawk Terraform Generator: https://github.com/Automatic/taskhawk-terraform-generator

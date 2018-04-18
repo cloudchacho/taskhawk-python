@@ -161,8 +161,22 @@ class Message:
 class Priority(enum.Enum):
     """
     Priority of a task. This may be used to differentiate batch jobs from other tasks for example.
+
+    High and low priority queues provide independent scaling knobs for your use-case.
     """
+
     default = enum.auto()
+    """
+    This is the default priority of a task if nothing is specified. In most cases,
+    using just the default queue should work fine.
+    """
+
     high = enum.auto()
     low = enum.auto()
+
     bulk = enum.auto()
+    """
+    Bulk queue will typically have different monitoring, and may be used for bulk jobs,
+    such as sending push notifications to all users. This allows you to effectively
+    throttle the tasks.
+    """

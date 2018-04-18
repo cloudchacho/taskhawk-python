@@ -17,4 +17,3 @@ API reference
    :member-order: bysource
 
 .. autofunction:: requeue_dead_letter
-

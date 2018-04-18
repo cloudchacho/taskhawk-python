@@ -13,24 +13,26 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import sys
+
+
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Custom Project Setup ----------------------------------------------------
 
-os.environ.setdefault('SETTINGS_MODULE', 'test.settings')
+os.environ.setdefault('SETTINGS_MODULE', 'settings')
 
 # -- Project information -----------------------------------------------------
 
 project = 'Taskhawk'
-copyright = '2018, Aniruddha Maru'
-author = 'Aniruddha Maru'
+copyright = '2018, Automatic Labs'
+author = 'Automatic Labs'
 
 # The short X.Y version
 version = '1.0'
 # The full version, including alpha/beta/rc tags
-release = '1.0.2'
+release = '1.0.3-dev'
 
 
 # -- General configuration ---------------------------------------------------
@@ -92,7 +94,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

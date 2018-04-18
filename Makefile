@@ -23,5 +23,5 @@ release: release_setup
 	./scripts/release.sh
 
 clean:
-	rm -rf usr/ etc/ *.deb build dist
+	rm -rf usr/ etc/ *.deb build dist docs/_build
 	find . -name "*.pyc" -delete
