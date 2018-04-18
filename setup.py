@@ -85,7 +85,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['flake8', 'Sphinx'],
+        'dev': ['flake8', 'Sphinx>=1.7.2'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },
