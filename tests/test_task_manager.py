@@ -248,6 +248,7 @@ class TestTask:
         metadata = funcy.merge(message.metadata, {
             'id': message.id,
             'receipt': receipt,
+            'priority': Priority.default,
         })
         _f.assert_called_once_with(*message.args, metadata, **message.kwargs)
 

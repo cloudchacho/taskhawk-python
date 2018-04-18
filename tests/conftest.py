@@ -43,6 +43,7 @@ def _message_data():
         "metadata": {
             "timestamp": int(time.time() * 1000),
             "version": "1.0",
+            "priority": "default"
         },
         "headers": {
             'request_id': str(uuid.uuid4()),

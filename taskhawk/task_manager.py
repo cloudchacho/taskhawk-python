@@ -211,9 +211,9 @@ class Task:
                 'id': message.id,
                 'timestamp': message.timestamp,
                 'version': message.version,
+                'receipt': receipt,
+                'priority': message.priority,
             }
-            if receipt:
-                kwargs['metadata']['receipt'] = receipt
         if self.accepts_headers:
             kwargs['headers'] = copy.deepcopy(message.headers)
         self.fn(*args, **kwargs)

@@ -85,4 +85,5 @@ class TestMessageMethods:
             'timestamp': message.timestamp,
             'version': message.version,
             'receipt': receipt,
+            'priority': Priority.default,
         }
