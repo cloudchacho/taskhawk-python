@@ -37,12 +37,12 @@ Next, set up a few configuration settings:
 
 .. code:: python
 
-    AWS_ACCESS_KEY = YOUR AWS KEY
-    AWS_ACCOUNT_ID = YOUR AWS ACCOUNT ID
-    AWS_REGION = YOUR AWS REGION
-    AWS_SECRET_KEY = YOUR AWS SECRET KEY
+    AWS_ACCESS_KEY = <YOUR AWS KEY>
+    AWS_ACCOUNT_ID = <YOUR AWS ACCOUNT ID>
+    AWS_REGION = <YOUR AWS REGION>
+    AWS_SECRET_KEY = <YOUR AWS SECRET KEY>
 
-    TASKHAWK_QUEUE = YOUR APP TASKHAWK QUEUE                                                                                                                                                                      
+    TASKHAWK_QUEUE = "DEV-MYAPP"
 
 For Django projects, simple use `Django settings`_ to configure Taskhawk, for non-Django projects, you
 must declare an environment variable called ``SETTINGS_MODULE`` that points to a module
@@ -84,7 +84,7 @@ Running Tests
 ~~~~~~~~~~~~~
 You can run tests in using ``make test``. By default,
 it will run all of the unit and functional tests, but you can also specify your own
-``py.test`` options. 
+``py.test`` options.
 
 .. code:: sh
 

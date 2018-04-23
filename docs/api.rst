@@ -7,7 +7,7 @@ API reference
 .. autofunction:: process_messages_for_lambda_consumer
 
 .. autofunction:: task
-   
+
 .. autoclass:: Task
    :members: with_priority, with_headers, dispatch
 
@@ -17,3 +17,11 @@ API reference
    :member-order: bysource
 
 .. autofunction:: requeue_dead_letter
+
+Exceptions
+++++++++++
+
+.. autoclass:: RetryException
+.. autoclass:: ValidationError
+.. autoclass:: ConfigurationError
+.. autoclass:: TaskNotFound

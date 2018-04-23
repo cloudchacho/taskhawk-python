@@ -108,7 +108,7 @@ required; string
 Flag indicating if Taskhawk should work synchronously. This is similar to Celery's Eager mode and is helpful for
 integration testing.
 
-optional; default False
+optional; bool; default False
 
 **TASKHAWK_TASK_CLASS**
 

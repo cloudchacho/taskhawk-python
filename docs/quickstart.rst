@@ -17,9 +17,9 @@ You may also install a specific version:
 
 .. code:: sh
 
-   $ pip install taskhawk==v1.0.0
+   $ pip install taskhawk==1.0.0
 
-The latest development version can always be found on Github_
+The latest development version can always be found on Github_.
 
 
 Configuration
