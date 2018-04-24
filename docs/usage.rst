@@ -72,6 +72,8 @@ A consumer for Lambda based workers can be started as following:
 where ``lambda_event`` is the event provided by AWS to your Lambda function as described `here
 <https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns>`_.
 
+If your tasks exist in different modules, ensure that your modules are imported before calling Taskhawk listener
+functions since tasks need to be registered before they can receive messages.
 
 .. _lambda_sns_format: https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
 .. _taskhawk_terraform: https://github.com/Automatic/taskhawk-terraform
