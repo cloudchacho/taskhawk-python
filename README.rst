@@ -16,8 +16,8 @@ Taskhawk Library for Python
 .. image:: https://img.shields.io/pypi/implementation/taskhawk.svg?style=flat-square
     :target: https://pypi.python.org/pypi/taskhawk
 
-TaskHawk is a replacement for celery that works on AWS SQS/SNS, while keeping things pretty simple and straight
-forward. Any unbound function can be converted into a TaskHawk task.
+TaskHawk is a replacement for celery that works on AWS SQS/SNS, while keeping things pretty simple and
+straightforward. Any unbound function can be converted into a TaskHawk task.
 
 Only Python 3.6+ is supported currently.
 

@@ -1,15 +1,14 @@
 Taskhawk documentation
 ======================
 
-TaskHawk is a replacement for celery that works on AWS SQS/SNS, while keeping things pretty simple and straight
-forward. Any unbound function can be converted into a TaskHawk task.
+TaskHawk is a replacement for celery that works on AWS SQS/SNS, while keeping things pretty simple and
+straightforward. Any unbound function can be converted into a TaskHawk task.
 
 For inter-service messaging, see Hedwig_.
 
 Only Python 3.6+ is supported currently.
 
-This project uses `semantic versioning
-<http://semver.org/>`_.
+This project uses `semantic versioning`_
 
 Quickstart
 ----------
@@ -36,4 +35,5 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _Hedwig: http://hedwig.rtfd.io/
+.. _Hedwig: http://hedwig.readthedocs.io/
+.. _semantic versioning: http://semver.org/

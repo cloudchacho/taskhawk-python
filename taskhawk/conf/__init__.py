@@ -9,6 +9,8 @@ _DEFAULTS = {
     'AWS_ACCOUNT_ID': None,
     'AWS_ACCESS_KEY': None,
     'AWS_CONNECT_TIMEOUT_S': 2,
+    'AWS_ENDPOINT_SNS': None,
+    'AWS_ENDPOINT_SQS': None,
     'AWS_READ_TIMEOUT_S': 2,
     'AWS_SECRET_KEY': None,
     'AWS_SESSION_TOKEN': None,
