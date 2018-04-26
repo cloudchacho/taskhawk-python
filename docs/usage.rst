@@ -75,6 +75,37 @@ where ``lambda_event`` is the event provided by AWS to your Lambda function as d
 If your tasks exist in different modules, ensure that your modules are imported before calling Taskhawk listener
 functions since tasks need to be registered before they can receive messages.
 
+Internals
++++++++++
+
+Message format
+~~~~~~~~~~~~~~
+
+Internally, all tasks are converted into a message that looks like this:
+
+.. code:: json
+
+    {
+        "id": "b1328174-a21c-43d3-b303-964dfcc76efc",
+        "metadata": {
+            "priority": "high",
+            "timestamp": 1460868253255,
+            "version": "1.0"
+        },
+        "headers": {
+            ...
+        },
+        "task": "tasks.send_email",
+        "args": [
+            "email@automatic.com",
+            "Hello!"
+        ],
+        "kwargs": {
+            "from_email": "spam@example.com"
+        }
+    }
+
+
 .. _lambda_sns_format: https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
 .. _taskhawk_terraform_generator: https://github.com/Automatic/taskhawk-terraform-generator
 

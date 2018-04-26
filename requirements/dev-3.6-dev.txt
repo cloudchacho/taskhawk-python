@@ -1,14 +1,17 @@
 alabaster==0.7.10         # via sphinx
 appnope==0.1.0            # via ipython
+arrow==0.12.1
 attrs==17.4.0             # via pytest
 babel==2.5.3              # via sphinx
 backcall==0.1.0           # via ipython
-boto3==1.7.4
-botocore==1.10.4          # via boto3, s3transfer
+boto3==1.7.9
+botocore==1.10.9          # via boto3, s3transfer
 certifi==2018.4.16        # via requests
 chardet==3.0.4            # via requests
+click==6.7                # via pip-tools
 decorator==4.3.0          # via ipython, traitlets
 docutils==0.14            # via botocore, sphinx
+first==2.0.1              # via pip-tools
 flake8==3.5.0
 funcy==1.10.1
 idna==2.6                 # via requests
@@ -26,6 +29,7 @@ packaging==17.1           # via sphinx
 parso==0.2.0              # via jedi
 pexpect==4.5.0            # via ipython
 pickleshare==0.7.4        # via ipython
+pip-tools==2.0.1
 pluggy==0.6.0             # via pytest
 prompt-toolkit==1.0.15    # via ipython
 ptyprocess==0.5.2         # via pexpect
@@ -35,17 +39,16 @@ pyflakes==1.6.0           # via flake8
 pygments==2.2.0           # via ipython, sphinx
 pyparsing==2.2.0          # via packaging
 pytest-env==0.6.2
-pytest==3.5.0             # via pytest-env
-python-dateutil==2.6.1    # via botocore
+pytest==3.5.1             # via pytest-env
+python-dateutil==2.7.2    # via arrow, botocore
 pytz==2018.4              # via babel
-raven==6.7.0
 requests==2.18.4          # via sphinx
 retrying==1.3.3
 s3transfer==0.1.13        # via boto3
 simplegeneric==0.8.1      # via ipython
-six==1.11.0               # via more-itertools, packaging, prompt-toolkit, pytest, python-dateutil, retrying, sphinx, traitlets
+six==1.11.0               # via more-itertools, packaging, pip-tools, prompt-toolkit, pytest, python-dateutil, retrying, sphinx, traitlets
 snowballstemmer==1.2.1    # via sphinx
-sphinx==1.7.2
+sphinx==1.7.4
 sphinxcontrib-websupport==1.0.1  # via sphinx
 traitlets==4.3.2          # via ipython
 urllib3==1.22             # via requests

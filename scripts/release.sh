@@ -6,6 +6,7 @@ exit_cleanup() {
     git reset --hard upstream/master
     git checkout upstream/master
     git branch -D new_master
+    git checkout master
 }
 
 err_cleanup() {

@@ -49,6 +49,11 @@ class TestMessageMethods:
         message.validate()
         assert message.task == send_email.task
 
+    def test_validate_str_timestamp(self, message_data):
+        message_data['metadata']['timestamp'] = '2015-11-11T21:29:54Z'
+
+        Message(message_data).validate()
+
     @pytest.mark.parametrize('missing_data', ['id', 'metadata', 'metadata__version', 'metadata__timestamp',
                                               'headers', 'task', 'args', 'kwargs'])
     def test_validate_missing_data(self, missing_data, message_data):

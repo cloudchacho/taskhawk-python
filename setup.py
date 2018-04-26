@@ -72,7 +72,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['funcy', 'retrying', 'boto3'],
+    install_requires=['funcy', 'retrying', 'boto3', 'arrow'],
 
     tests_require=tests_require,
 
@@ -85,7 +85,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['flake8', 'Sphinx>=1.7.2'],
+        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },

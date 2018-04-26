@@ -1,8 +1,9 @@
 import enum
+import time
 import typing
 import uuid
 
-import time
+import arrow
 
 from taskhawk.exceptions import TaskNotFound, ValidationError
 
@@ -53,6 +54,13 @@ class Message:
         :raises exceptions.ValidationError: when message fails validation
         """
         from taskhawk.task_manager import Task
+
+        # support string datetimes
+        if isinstance(self.timestamp, str):
+            try:
+                self.metadata['timestamp'] = int(arrow.get(self.timestamp).float_timestamp * 1000)
+            except (ValueError, arrow.ParserError):
+                raise ValidationError
 
         if (not self.id or not self.version or self.version not in self.VERSIONS or not self.timestamp or
                 self.headers is None or not self.task_name or self.args is None or self.kwargs is None):
@@ -105,7 +113,7 @@ class Message:
         return self._id
 
     @property
-    def metadata(self) -> str:
+    def metadata(self) -> dict:
         return self._metadata
 
     @property
