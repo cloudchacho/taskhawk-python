@@ -59,7 +59,7 @@ class Message:
         if isinstance(self.timestamp, str):
             try:
                 self.metadata['timestamp'] = int(arrow.get(self.timestamp).float_timestamp * 1000)
-            except (ValueError, arrow.ParserError):
+            except (ValueError, arrow.parser.ParserError):
                 raise ValidationError
 
         if (not self.id or not self.version or self.version not in self.VERSIONS or not self.timestamp or
