@@ -76,6 +76,5 @@ If your tasks exist in different modules, ensure that your modules are imported 
 functions since tasks need to be registered before they can receive messages.
 
 .. _lambda_sns_format: https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
-.. _taskhawk_terraform: https://github.com/Automatic/taskhawk-terraform
 .. _taskhawk_terraform_generator: https://github.com/Automatic/taskhawk-terraform-generator
 

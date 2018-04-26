@@ -28,6 +28,20 @@ AWS connection timeout
 
 optional; int; default: 2
 
+**AWS_ENDPOINT_SNS**
+
+AWS endpoint for SNS. This may be used to customized AWS endpoints to assist with testing, for example, using
+localstack.
+
+optional; string
+
+**AWS_ENDPOINT_SQS**
+
+AWS endpoint for SQS. This may be used to customized AWS endpoints to assist with testing, for example, using
+localstack.
+
+optional; string
+
 **AWS_READ_TIMEOUT_S**
 
 AWS read timeout

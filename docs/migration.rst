@@ -8,7 +8,7 @@ Assuming publishers and workers are completely independent processes:
 
 1. Remove all celery task decorators from your task functions and replace them with :meth:`taskhawk.task`.
 #. Remove all celery related settings from your project.
-#. Provision infra required for taskhawk using taskhawk_terraform_ and taskhawk_terraform_generator_, or manually.
+#. Provision infra required for taskhawk using and taskhawk_terraform_generator_, or manually.
 #. Add new processes for workers on each priority queue that your app publishes to (not all queues may be relevant
    for your app).
 #. Deploy Taskhawk worker processes (not publishers).
@@ -21,7 +21,7 @@ If Celery workers also publish async tasks:
 
 1. Remove all celery task decorators from your task functions and replace them with :meth:`taskhawk.task`.
 #. Remove all celery related settings from your project.
-#. Provision infra required for taskhawk using taskhawk_terraform_ and taskhawk_terraform_generator_, or manually.
+#. Provision infra required for taskhawk using and taskhawk_terraform_generator_, or manually.
 #. Add new processes for workers on each priority queue that your app publishes to (not all queues may be relevant
    for your app).
 #. Deploy a test TaskHawk worker process.
@@ -35,5 +35,4 @@ If Celery workers also publish async tasks:
 #. Terminate Celery worker processes.
 
 
-.. _taskhawk_terraform: https://github.com/Automatic/taskhawk-terraform
 .. _taskhawk_terraform_generator: https://github.com/Automatic/taskhawk-terraform-generator

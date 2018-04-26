@@ -48,7 +48,7 @@ Provisioning
 Taskhawk works on SQS and SNS as backing queues. Before you can publish tasks, you
 need to provision the required infra. This may be done manually, or, preferably,
 using Terraform. Taskhawk provides tools to make infra configuration easier: see
-Terraform_ and `Taskhawk Terraform Generator`_ for further details.
+`Taskhawk Terraform Generator`_ for further details.
 
 Using Taskhawk
 --------------
@@ -80,5 +80,4 @@ For more details, see :class:`taskhawk.Priority`.
 
 .. _Github: https://github.com/Automatic/taskhawk-python
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
-.. _Terraform: https://github.com/Automatic/taskhawk-terraform
 .. _Taskhawk Terraform Generator: https://github.com/Automatic/taskhawk-terraform-generator
