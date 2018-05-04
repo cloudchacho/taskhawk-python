@@ -11,7 +11,7 @@ from taskhawk.publisher import publish
 _ALL_TASKS = {}
 
 
-def task(*args, priority: Priority = Priority.default) -> typing.Callable:
+def task(*args, priority: Priority = Priority.default, name: typing.Optional[str] = None) -> typing.Callable:
     """
     Decorator for taskhawk task functions. Any function may be converted into a task by adding this decorator
     as such:
@@ -25,7 +25,13 @@ def task(*args, priority: Priority = Priority.default) -> typing.Callable:
     Additional methods available on tasks are described by :class:`taskhawk.Task` class
     """
     def _decorator(fn: typing.Callable) -> typing.Callable:
-        fn.task = settings.TASKHAWK_TASK_CLASS(fn, priority)
+        task_name = name or f'{fn.__module__}.{fn.__name__}'
+        existing_task = _ALL_TASKS.get(task_name)
+        if existing_task is not None:
+            func = existing_task.fn
+            raise ConfigurationError(f'Task named "{task_name}" already exists: {func.__module__}.{func.__name__}')
+
+        fn.task = settings.TASKHAWK_TASK_CLASS(fn, priority, task_name)
         fn.dispatch = fn.task.dispatch
         fn.with_headers = fn.task.with_headers
         fn.with_priority = fn.task.with_priority
@@ -113,8 +119,8 @@ class Task:
                                 .dispatch('example@email.com')
 
     """
-    def __init__(self, fn: typing.Callable, priority: Priority) -> None:
-        self._name = f'{fn.__module__}.{fn.__name__}'
+    def __init__(self, fn: typing.Callable, priority: Priority, name: str) -> None:
+        self._name = name
         self._fn = fn
         self._priority = priority
         signature = inspect.signature(fn)

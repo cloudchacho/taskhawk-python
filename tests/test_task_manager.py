@@ -21,8 +21,31 @@ def test_task_decorator():
     assert 'tests.test_task_manager.f' in _ALL_TASKS
 
 
+def test_task_decorator_custom_name():
+    @task(name='foo')
+    def f():
+        pass
+
+    assert f.task.name == 'foo'
+    assert 'foo' in _ALL_TASKS
+
+
+def test_task_decorator_custom_name_conflict():
+    def make_tasks():
+        @task(name='foo')
+        def f():
+            pass
+
+        @task(name='foo')
+        def g():
+            pass
+
+    with pytest.raises(ConfigurationError):
+        make_tasks()
+
+
 def test_task_decorator_priority():
-    @task(priority=Priority.high)
+    @task(priority=Priority.high, name='test_task_decorator_priority')
     def f():
         pass
 
@@ -30,7 +53,7 @@ def test_task_decorator_priority():
     assert callable(f.dispatch)
     assert callable(f.with_headers)
     assert callable(f.with_priority)
-    assert 'tests.test_task_manager.f' in _ALL_TASKS
+    assert 'test_task_decorator_priority' in _ALL_TASKS
 
 
 class CustomTask(Task):
@@ -40,7 +63,7 @@ class CustomTask(Task):
 def test_task_decorator_custom_task_class(settings):
     settings.TASKHAWK_TASK_CLASS = 'tests.test_task_manager.CustomTask'
 
-    @task
+    @task(name='test_task_decorator_custom_task_class')
     def f():
         pass
 
@@ -164,24 +187,24 @@ class TestTask:
         pass
 
     def test_constructor(self):
-        task_obj = Task(TestTask.f, Priority.default)
-        assert task_obj.name == 'tests.test_task_manager.f'
+        task_obj = Task(TestTask.f, Priority.default, 'name')
+        assert task_obj.name == 'name'
         assert task_obj.fn is TestTask.f
         assert task_obj.priority is Priority.default
         assert task_obj._accepts_metadata is False
         assert task_obj._accepts_headers is False
 
     def test_constructor_accepts_metadata_and_headers(self):
-        task_obj = Task(TestTask.f_metadata_headers, Priority.default)
-        assert task_obj.name == 'tests.test_task_manager.f_metadata_headers'
+        task_obj = Task(TestTask.f_metadata_headers, Priority.default, 'name')
+        assert task_obj.name == 'name'
         assert task_obj.fn is TestTask.f_metadata_headers
         assert task_obj.priority is Priority.default
         assert task_obj._accepts_metadata is True
         assert task_obj._accepts_headers is True
 
     def test_constructor_kwargs(self):
-        task_obj = Task(TestTask.f_kwargs, Priority.default)
-        assert task_obj.name == 'tests.test_task_manager.f_kwargs'
+        task_obj = Task(TestTask.f_kwargs, Priority.default, 'name')
+        assert task_obj.name == 'name'
         assert task_obj.fn is TestTask.f_kwargs
         assert task_obj.priority is Priority.default
         assert task_obj._accepts_metadata is True
@@ -189,24 +212,24 @@ class TestTask:
 
     def test_constructor_disallow_args(self):
         with pytest.raises(ConfigurationError):
-            Task(TestTask.f_args, Priority.default)
+            Task(TestTask.f_args, Priority.default, 'name')
 
     def test_constructor_bad_annotation(self):
         with pytest.raises(ConfigurationError):
-            Task(TestTask.f_invalid_annotation, Priority.default)
+            Task(TestTask.f_invalid_annotation, Priority.default, 'name')
 
     def test_with_headers(self):
-        task_obj = Task(TestTask.f, Priority.default)
+        task_obj = Task(TestTask.f, Priority.default, 'name')
         request_id = str(uuid.uuid4())
         assert task_obj.with_headers(request_id=request_id)._headers == {'request_id': request_id}
 
     def test_with_priority(self):
-        task_obj = Task(TestTask.f, Priority.default)
+        task_obj = Task(TestTask.f, Priority.default, 'name')
         assert task_obj.with_priority(Priority.high)._priority == Priority.high
 
     @mock.patch('taskhawk.task_manager.AsyncInvocation.dispatch', autospec=True)
     def test_dispatch(self, mock_dispatch):
-        task_obj = Task(TestTask.f, Priority.default)
+        task_obj = Task(TestTask.f, Priority.default, 'name')
         task_obj.dispatch(1, 2)
         mock_dispatch.assert_called_once()
         assert mock_dispatch.call_args[0][1:] == (1, 2)
@@ -214,7 +237,7 @@ class TestTask:
     def test_call(self, message):
         _f = mock.MagicMock()
 
-        @task
+        @task(name='test_call')
         def f(to: str, subject: str, from_email: str=None):
             _f(to, subject, from_email=from_email)
 
@@ -226,7 +249,7 @@ class TestTask:
     def test_call_headers(self, message):
         _f = mock.MagicMock()
 
-        @task
+        @task(name='test_call_headers')
         def f(to: str, subject: str, from_email: str=None, headers=None):
             _f(to, subject, from_email=from_email, headers=headers)
 
@@ -238,7 +261,7 @@ class TestTask:
     def test_call_metadata(self, message):
         _f = mock.MagicMock()
 
-        @task
+        @task(name='test_call_metadata')
         def f(to: str, subject: str, metadata, from_email: str=None):
             _f(to, subject, metadata, from_email=from_email)
 
