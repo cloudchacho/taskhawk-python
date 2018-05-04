@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from taskhawk import consumer
+from taskhawk import consumer, LoggingException
 from taskhawk.conf import settings
 from taskhawk.consumer import (
     fetch_and_process_messages, _load_and_validate_message, get_queue_name, message_handler,
@@ -56,6 +56,22 @@ class TestMessageHandler:
         mock_call_task.side_effect = Exception
         with pytest.raises(mock_call_task.side_effect):
             message_handler(json.dumps(message_data), None)
+
+    def test_special_handling_logging_error(self, mock_load_and_validate_message, mock_call_task, message_data, message):
+        mock_load_and_validate_message.return_value = message
+        mock_call_task.side_effect = LoggingException('foo', extra={'mickey': 'mouse'})
+        with pytest.raises(LoggingException), mock.patch.object(consumer.logger, 'exception') as logging_mock:
+            message_handler(json.dumps(message_data), None)
+
+            logging_mock.assert_called_once_with('foo', extra={'mickey': 'mouse'})
+
+    def test_special_handling_retry_error(self, mock_load_and_validate_message, mock_call_task, message_data, message):
+        mock_load_and_validate_message.return_value = message
+        mock_call_task.side_effect = RetryException
+        with pytest.raises(mock_call_task.side_effect), mock.patch.object(consumer.logger, 'info') as logging_mock:
+            message_handler(json.dumps(message_data), None)
+
+            logging_mock.assert_called_once()
 
 
 @mock.patch('taskhawk.consumer.message_handler', autospec=True)
@@ -124,31 +140,14 @@ class TestFetchAndProcessMessages:
         for message in mock_get_messages.return_value:
             message.delete.assert_called_once_with()
 
-    def test_logs_exceptions_and_preserves_messages(self, mock_message_handler, mock_get_messages):
+    def test_preserves_messages(self, mock_message_handler, mock_get_messages):
         queue_name = 'my-queue'
         queue = mock.MagicMock()
 
         mock_get_messages.return_value = [mock.MagicMock()]
         mock_message_handler.side_effect = Exception
 
-        with mock.patch.object(consumer.logger, 'exception') as logging_mock:
-            fetch_and_process_messages(queue_name, queue)
-
-            logging_mock.assert_called_once()
-
-        mock_get_messages.return_value[0].delete.assert_not_called()
-
-    def test_special_handling_retry_error(self, mock_message_handler, mock_get_messages):
-        queue_name = 'my-queue'
-        queue = mock.MagicMock()
-
-        mock_get_messages.return_value = [mock.MagicMock()]
-        mock_message_handler.side_effect = RetryException
-
-        with mock.patch.object(consumer.logger, 'info') as logging_mock:
-            fetch_and_process_messages(queue_name, queue)
-
-            logging_mock.assert_called_once()
+        fetch_and_process_messages(queue_name, queue)
 
         mock_get_messages.return_value[0].delete.assert_not_called()
 
@@ -183,10 +182,6 @@ class TestFetchAndProcessMessages:
 
 @mock.patch('taskhawk.consumer.message_handler_lambda', autospec=True)
 class TestProcessMessagesForLambdaConsumer:
-    def assert_extra_logged(self, logging_mock, expected):
-        actual = logging_mock.call_args[1]['extra']
-        assert actual == expected
-
     def test_success(self, mock_message_handler):
         # copy from https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
         mock_record1 = {
@@ -258,10 +253,8 @@ class TestProcessMessagesForLambdaConsumer:
     def test_logs_and_preserves_message(self, mock_handler):
         event = {'Records': [mock.MagicMock()]}
         mock_handler.side_effect = RuntimeError
-        with mock.patch.object(consumer.logger, 'exception') as logging_mock:
-            with pytest.raises(RuntimeError):
-                process_messages_for_lambda_consumer(event)
-            self.assert_extra_logged(logging_mock, None)
+        with pytest.raises(RuntimeError):
+            process_messages_for_lambda_consumer(event)
 
 
 @mock.patch('taskhawk.consumer.get_queue', autospec=True)

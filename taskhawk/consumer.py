@@ -12,7 +12,7 @@ except ImportError:
     db = None
 
 from taskhawk.conf import settings
-from taskhawk.exceptions import RetryException, ValidationError
+from taskhawk.exceptions import RetryException, LoggingException, ValidationError
 from taskhawk.models import Message
 from taskhawk import Priority
 
@@ -38,15 +38,6 @@ def get_queue(queue_name: str):
     return sqs.get_queue_by_name(QueueName=queue_name)
 
 
-class LoggingError(Exception):
-    """
-    An exception that allows passing additional logging info.
-    """
-    def __init__(self, message, extra=None):
-        super(LoggingError, self).__init__(message)
-        self.extra = extra
-
-
 def log_received_message(message_body: dict) -> None:
     logger.debug('Received message', extra={
         'message_body': message_body,
@@ -54,7 +45,7 @@ def log_received_message(message_body: dict) -> None:
 
 
 def log_invalid_message(message_json: str) -> None:
-    logger.debug('Received invalid message', extra={
+    logger.error('Received invalid message', extra={
         'message_json': message_json,
     })
 
@@ -75,7 +66,22 @@ def message_handler(message_json: str, receipt: typing.Optional[str]) -> None:
 
     log_received_message(message_body)
 
-    message.call_task(receipt)
+    try:
+        message.call_task(receipt)
+    except LoggingException as e:
+        # log with message and extra
+        logger.exception(str(e), extra=e.extra)
+        # let it bubble up so message ends up in DLQ
+        raise
+    except RetryException:
+        # Retry without logging exception
+        logger.info('Retrying due to exception')
+        # let it bubble up so message ends up in DLQ
+        raise
+    except Exception:
+        logger.exception(f'Exception while processing message')
+        # let it bubble up so message ends up in DLQ
+        raise
 
 
 def message_handler_sqs(queue_message) -> None:
@@ -121,18 +127,13 @@ def fetch_and_process_messages(queue_name: str, queue, num_messages: int = 1, vi
 
         try:
             message_handler_sqs(queue_message)
-        except RetryException as e:
-            # Retry without logging exception
-            extra = (e.extra if isinstance(e, LoggingError) else None)
-            logger.info('Retrying due to exception', extra=extra)
-        except Exception as e:
-            extra = (e.extra if isinstance(e, LoggingError) else None)
-            logger.exception(f'Exception while processing message from {queue_name}', extra=extra)
-        else:
             try:
                 queue_message.delete()
             except Exception:
                 logger.exception(f'Exception while deleting message from {queue_name}')
+        except Exception:
+            # already logged in message_handler
+            pass
 
 
 def process_messages_for_lambda_consumer(lambda_event: dict) -> None:
@@ -149,13 +150,7 @@ def process_messages_for_lambda_consumer(lambda_event: dict) -> None:
     for record in lambda_event['Records']:
         settings.TASKHAWK_PRE_PROCESS_HOOK(sns_record=record)
 
-        try:
-            message_handler_lambda(record)
-        except Exception as e:
-            extra = (e.extra if isinstance(e, LoggingError) else None)
-            logger.exception('Exception while processing message', extra=extra)
-            # let it bubble up so message ends up in DLQ
-            raise
+        message_handler_lambda(record)
 
 
 def _close_database():
