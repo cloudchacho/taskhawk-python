@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from taskhawk import consumer, LoggingException
+from taskhawk import consumer
 from taskhawk.conf import settings
 from taskhawk.consumer import (
     fetch_and_process_messages, _load_and_validate_message, get_queue_name, message_handler,
@@ -12,7 +12,7 @@ from taskhawk.consumer import (
     get_queue, get_queue_messages, WAIT_TIME_SECONDS
 )
 from taskhawk.models import Priority
-from taskhawk.exceptions import RetryException, ValidationError
+from taskhawk.exceptions import (RetryException, ValidationError, LoggingException, IgnoreException)
 
 
 @mock.patch('taskhawk.consumer._get_sqs_resource', autospec=True)
@@ -69,6 +69,16 @@ class TestMessageHandler:
         mock_load_and_validate_message.return_value = message
         mock_call_task.side_effect = RetryException
         with pytest.raises(mock_call_task.side_effect), mock.patch.object(consumer.logger, 'info') as logging_mock:
+            message_handler(json.dumps(message_data), None)
+
+            logging_mock.assert_called_once()
+
+    def test_special_handling_ignore_exception(self, mock_load_and_validate_message, mock_call_task, message_data,
+                                               message):
+        mock_load_and_validate_message.return_value = message
+        mock_call_task.side_effect = IgnoreException
+        # no exception raised
+        with mock.patch.object(consumer.logger, 'info') as logging_mock:
             message_handler(json.dumps(message_data), None)
 
             logging_mock.assert_called_once()

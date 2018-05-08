@@ -16,6 +16,13 @@ class LoggingException(Exception):
         self.extra = extra
 
 
+class IgnoreException(Exception):
+    """
+    Indicates that this task should be ignored.
+    """
+    pass
+
+
 class ValidationError(Exception):
     """
     Message failed JSON schema validation

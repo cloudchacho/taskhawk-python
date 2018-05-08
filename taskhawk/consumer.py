@@ -12,7 +12,7 @@ except ImportError:
     db = None
 
 from taskhawk.conf import settings
-from taskhawk.exceptions import RetryException, LoggingException, ValidationError
+from taskhawk.exceptions import RetryException, LoggingException, ValidationError, IgnoreException
 from taskhawk.models import Message
 from taskhawk import Priority
 
@@ -68,6 +68,9 @@ def message_handler(message_json: str, receipt: typing.Optional[str]) -> None:
 
     try:
         message.call_task(receipt)
+    except IgnoreException:
+        logger.info(f'Ignoring task {message.id}')
+        return
     except LoggingException as e:
         # log with message and extra
         logger.exception(str(e), extra=e.extra)

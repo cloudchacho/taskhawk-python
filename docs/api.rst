@@ -23,6 +23,7 @@ Exceptions
 
 .. autoclass:: RetryException
 .. autoclass:: LoggingException
+.. autoclass:: IgnoreException
 .. autoclass:: ValidationError
 .. autoclass:: ConfigurationError
 .. autoclass:: TaskNotFound
