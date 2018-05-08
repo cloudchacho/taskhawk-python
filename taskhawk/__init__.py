@@ -7,7 +7,7 @@ taskhawk
 
 
 # semantic versioning (http://semver.org/)
-VERSION = '1.3.0'
+VERSION = '1.3.1-dev'
 
 
 from .models import Message, Priority  # noqa
