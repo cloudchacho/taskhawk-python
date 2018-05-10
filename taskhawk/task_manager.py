@@ -224,7 +224,7 @@ class Task:
             kwargs['headers'] = copy.deepcopy(message.headers)
         self.fn(*args, **kwargs)
 
-    def __unicode__(self) -> str:
+    def __str__(self) -> str:
         return f'Taskhawk task: {self.name}'
 
     @classmethod

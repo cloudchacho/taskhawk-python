@@ -83,12 +83,6 @@ It's recommended that this function be declared with ``**kwargs`` so it doesn't 
 
 optional; fully-qualified function name
 
-**TASKHAWK_MAX_DB_REUSE_LOOPS**
-
-Number of loops before database connections are recycled. Only applies to Django apps.
-
-optional; int; default: 5
-
 **TASKHAWK_PRE_PROCESS_HOOK**
 
 A function which can used to plug into the message processing pipeline *before* any processing happens. This hook

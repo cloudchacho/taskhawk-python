@@ -186,6 +186,10 @@ class TestTask:
     def f_invalid_annotation(a, b, metadata: int):
         pass
 
+    @staticmethod
+    def f_invalid_annotation2(a, b, headers: int):
+        pass
+
     def test_constructor(self):
         task_obj = Task(TestTask.f, Priority.default, 'name')
         assert task_obj.name == 'name'
@@ -217,6 +221,10 @@ class TestTask:
     def test_constructor_bad_annotation(self):
         with pytest.raises(ConfigurationError):
             Task(TestTask.f_invalid_annotation, Priority.default, 'name')
+
+    def test_constructor_bad_annotation2(self):
+        with pytest.raises(ConfigurationError):
+            Task(TestTask.f_invalid_annotation2, Priority.default, 'name')
 
     def test_with_headers(self):
         task_obj = Task(TestTask.f, Priority.default, 'name')
@@ -281,3 +289,6 @@ class TestTask:
     def test_find_by_name_fail(self):
         with pytest.raises(TaskNotFound):
             Task.find_by_name('invalid')
+
+    def test_repr(self):
+        assert str(send_email.task) == 'Taskhawk task: tests.tasks.send_email'

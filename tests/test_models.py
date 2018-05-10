@@ -54,6 +54,12 @@ class TestMessageMethods:
 
         Message(message_data).validate()
 
+    def test_validate_bad_timestamp(self, message_data):
+        message_data['metadata']['timestamp'] = 'foobar'
+
+        with pytest.raises(ValidationError):
+            Message(message_data).validate()
+
     @pytest.mark.parametrize('missing_data', ['id', 'metadata', 'metadata__version', 'metadata__timestamp',
                                               'headers', 'task', 'args', 'kwargs'])
     def test_validate_missing_data(self, missing_data, message_data):
@@ -92,3 +98,12 @@ class TestMessageMethods:
             'receipt': receipt,
             'priority': Priority.default,
         }
+
+    def test_equal(self, message):
+        assert message == message
+
+    def test_equal_fail(self, message):
+        assert message != message.as_dict()
+
+    def test_items(self, message):
+        assert dict(message.items()) == message.as_dict()

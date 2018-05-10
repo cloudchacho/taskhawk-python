@@ -19,12 +19,8 @@ class PartialFailure(Exception):
         super().__init__(*args)
 
 
-def _enqueue_messages(queue, queue_messages, delay_seconds: int=None) -> None:
+def _enqueue_messages(queue, queue_messages) -> None:
     params = {}
-
-    if delay_seconds:
-        assert isinstance(delay_seconds, int)
-        params["DelaySeconds"] = delay_seconds
 
     result = queue.send_messages(
         Entries=[

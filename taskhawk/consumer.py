@@ -1,3 +1,4 @@
+import itertools
 import json
 import logging
 import typing
@@ -5,11 +6,6 @@ import typing
 import boto3
 import boto3.resources.base
 import boto3.resources.model
-
-try:
-    from django import db
-except ImportError:
-    db = None
 
 from taskhawk.conf import settings
 from taskhawk.exceptions import RetryException, LoggingException, ValidationError, IgnoreException
@@ -156,20 +152,6 @@ def process_messages_for_lambda_consumer(lambda_event: dict) -> None:
         message_handler_lambda(record)
 
 
-def _close_database():
-    if not db:
-        return
-    for conn in db.connections.all():
-        try:
-            conn.close()
-        except db.InterfaceError:
-            pass
-        except db.DatabaseError as exc:
-            str_exc = str(exc)
-            if 'closed' not in str_exc and 'not connected' not in str_exc:
-                raise
-
-
 def listen_for_messages(
         priority: Priority, num_messages: int = 1, visibility_timeout_s: int = None,
         loop_count: int = None) -> None:
@@ -192,16 +174,9 @@ def listen_for_messages(
     queue_name = get_queue_name(priority)
 
     queue = get_queue(queue_name)
-    db_reuse_count = 0
-    if loop_count is None:
-        while True:
+    for count in itertools.count():
+        if loop_count is None or count < loop_count:
             fetch_and_process_messages(
                 queue_name, queue, num_messages=num_messages, visibility_timeout=visibility_timeout_s)
-            db_reuse_count += 1
-            if db_reuse_count >= settings.TASKHAWK_MAX_DB_REUSE_LOOPS:
-                _close_database()
-                db_reuse_count = 0
-    else:
-        for _ in range(loop_count):
-            fetch_and_process_messages(
-                queue_name, queue, num_messages=num_messages, visibility_timeout=visibility_timeout_s)
+        else:
+            break

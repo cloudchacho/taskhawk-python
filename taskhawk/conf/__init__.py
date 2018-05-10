@@ -16,7 +16,6 @@ _DEFAULTS = {
     'AWS_SESSION_TOKEN': None,
     'IS_LAMBDA_APP': False,
     'TASKHAWK_DEFAULT_HEADERS': 'taskhawk.conf.default_headers_hook',
-    'TASKHAWK_MAX_DB_REUSE_LOOPS': 5,
     'TASKHAWK_PRE_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_QUEUE': None,
     'TASKHAWK_SYNC': False,

@@ -2,8 +2,23 @@ import random
 from unittest import mock
 import uuid
 
+from taskhawk.conf import settings
 from taskhawk.models import Priority
-from taskhawk.utils import extend_visibility_timeout
+from taskhawk.utils import extend_visibility_timeout, _get_sqs_client
+
+
+@mock.patch('taskhawk.utils.boto3.client')
+def test_get_sqs_client(mock_boto3_client):
+    client = _get_sqs_client()
+    mock_boto3_client.assert_called_once_with(
+        'sqs',
+        region_name=settings.AWS_REGION,
+        aws_access_key_id=settings.AWS_ACCESS_KEY,
+        aws_secret_access_key=settings.AWS_SECRET_KEY,
+        aws_session_token=settings.AWS_SESSION_TOKEN,
+        endpoint_url=settings.AWS_ENDPOINT_SNS,
+    )
+    assert client == mock_boto3_client.return_value
 
 
 @mock.patch('taskhawk.utils._get_sqs_client')

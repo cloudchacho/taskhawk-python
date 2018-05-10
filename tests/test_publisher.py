@@ -1,4 +1,3 @@
-import copy
 from decimal import Decimal
 import json
 from unittest import mock
@@ -9,7 +8,25 @@ import pytest
 from taskhawk import Priority
 from taskhawk.conf import settings
 from taskhawk.models import Message
-from taskhawk.publisher import publish, _get_sns_topic, _convert_to_json, _publish_over_sns, _publish_over_sqs
+from taskhawk.publisher import (
+    publish, _get_sns_topic, _convert_to_json, _publish_over_sns, _publish_over_sqs,
+    _get_sns_client,
+)
+
+
+@mock.patch('taskhawk.publisher.boto3.client', autospec=True)
+def test_get_sns_client(mock_boto3_client):
+    client = _get_sns_client()
+    mock_boto3_client.assert_called_once_with(
+        'sns',
+        region_name=settings.AWS_REGION,
+        aws_access_key_id=settings.AWS_ACCESS_KEY,
+        aws_secret_access_key=settings.AWS_SECRET_KEY,
+        aws_session_token=settings.AWS_SESSION_TOKEN,
+        endpoint_url=settings.AWS_ENDPOINT_SNS,
+        config=mock.ANY,
+    )
+    assert client == mock_boto3_client.return_value
 
 
 @pytest.mark.parametrize(
@@ -64,16 +81,18 @@ def test__publish_over_sqs(message):
     )
 
 
-@pytest.fixture(name='message_with_decimal')
-def _message_with_decimal(message_data):
-    message_data = copy.deepcopy(message_data)
-    message_data['args'][0] = Decimal(1469056316326)
-    return Message(message_data)
+@pytest.mark.parametrize('value', [1469056316326, 1469056316326.123])
+def test__convert_to_json_decimal(value, message_data):
+    message_data['args'][0] = Decimal(value)
+    message = Message(message_data)
+    assert json.loads(_convert_to_json(message.as_dict()))['args'][0] == float(message.args[0])
 
 
-def test__convert_to_json_decimal(message_with_decimal):
-    assert json.loads(_convert_to_json(message_with_decimal.as_dict()))['args'][0] == \
-        float(message_with_decimal.args[0])
+def test__convert_to_json_non_serializable(message_data):
+    message_data['args'][0] = object()
+    message = Message(message_data)
+    with pytest.raises(TypeError):
+        _convert_to_json(message.as_dict())
 
 
 @mock.patch('taskhawk.publisher.get_queue_name', autospec=True)
