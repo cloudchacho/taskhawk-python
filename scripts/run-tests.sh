@@ -2,7 +2,7 @@
 
 set -e
 
-options="-v -s --strict"
+options="-v -s --strict --cov=taskhawk"
 
 if [ -z "${target}" ]; then
     target="tests"

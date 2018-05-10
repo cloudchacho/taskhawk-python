@@ -114,9 +114,11 @@ deps/
 # python
 .eggs
 .cache
+.coverage
 *.egg-info
 build
 dist
+htmlcov
 
 # docs
 docs/_build

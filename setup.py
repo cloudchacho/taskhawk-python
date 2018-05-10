@@ -23,7 +23,7 @@ with open('taskhawk/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
 tests_require = [
-    'pytest', 'flake8', 'pytest-env', 'ipdb'
+    'pytest', 'flake8', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov'
 ]
 
 setup(
