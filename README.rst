@@ -4,8 +4,8 @@ Taskhawk Library for Python
 .. image:: https://travis-ci.org/Automatic/taskhawk-python.svg?branch=master
     :target: https://travis-ci.org/Automatic/taskhawk-python
 
-.. image:: https://img.shields.io/coveralls/automatic/taskhawk-python/master.svg?style=flat-square
-    :target: https://coveralls.io/r/automatic/taskhawk-python
+.. image:: https://coveralls.io/repos/github/Automatic/taskhawk-python/badge.svg?branch=master
+    :target: https://coveralls.io/github/Automatic/taskhawk-python?branch=master
 
 .. image:: https://img.shields.io/pypi/v/taskhawk.svg?style=flat-square
     :target: https://pypi.python.org/pypi/taskhawk
