@@ -1,11 +1,14 @@
 language: python
 python:
-  - "3.6"
-  - "3.6-dev"  # 3.6 development branch
-  - "3.7-dev"  # 3.7 development branch
+- '3.6'
+- 3.6-dev
+- 3.7-dev
 install:
-  - make test_setup
+- make test_setup
 script:
-  - make test
+- make test
 after_success:
-  - coveralls
+- coveralls
+notifications:
+  slack:
+    secure: jzQYR8YW7OeGyh3ydXDlMNi617Z3y1nFeTr6vDgMnQuc/7iG7s4TeOzGTbnWD2Ozal3riipPQPQfIVWpTdoj5YgglYONT+a6y1QtHp5Q3f/OHX0vBXBwrvZL+GzuqV8bkdPL6uxoeM+dqyz+vQN/MUDqde9tsm5l3N4xOChCgX8J0oeYijuYgWk1juEufU9fZ6EqWelGo5p/HnWQX/y5wxLHOTikdcXgw8iRCHnJq+6161IxkBoUYIQBHujlNPLeXhIT/W/grfUIWY7isNuDQAB1I+VIS6sukUGWViguz2S5ytEV+qZgpp6wpjcp91z1opYn9vLqwphyY9NcbGvXjhYTpOILzNnuk8Y5t1tXuCOTEaxcssS2sFW+UsLXVZpJNmWGpH9BhXFSsjLZezcBvxgihRXjeMnrLsNSbqwK8JBWLF3+UGCfiUZ09RPRHSXjCYq4mzUDbIYxaPyzrG2zsLDfJ4Ucpc4TPxcjH6Lxn+hUOmVf5xiGEzPeHetEPfMBECgTE5hqS6T6Jamsz8n3xprNKKtzLG0ms2a4DNnLJIL4a9Hc9UwFg4j5jjXRVaXUb/hWVIKHuaFx5sq5T0N3KcLdt3Kn3f38UOlNOuJYHUTIMlJ7KDtWe2AenXN4xKmnOmh/pIOA0VKoPP2Kjnr3ygwHB//mkvtmkiZF/nx5FaE=
