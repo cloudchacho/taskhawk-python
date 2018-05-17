@@ -161,7 +161,6 @@ def test_async_invocation_sync_invoke(mock_message_new, message, settings):
     invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
 
     mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
-    mock_message_new.return_value.validate.assert_called_once_with()
     mock_message_new.return_value.call_task.assert_called_once_with(None)
 
 

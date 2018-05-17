@@ -10,6 +10,8 @@ fi
 
 options="${target} ${options}"
 
+mypy taskhawk
+
 python3 -bb -m pytest ${options}
 
 flake8

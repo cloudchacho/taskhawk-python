@@ -7,6 +7,9 @@ import arrow
 
 from taskhawk.exceptions import TaskNotFound, ValidationError
 
+if typing.TYPE_CHECKING:
+    from taskhawk.task_manager import Task  # noqa  # pragma: no cover
+
 
 class Message:
     """
@@ -45,15 +48,14 @@ class Message:
         self._args = data['args']
         self._kwargs = data['kwargs']
 
-        # will be assigned during validation:
-        self._task = None
+        self.validate()
 
     def validate(self) -> None:
         """
         Validate that message object contains all the right things.
         :raises exceptions.ValidationError: when message fails validation
         """
-        from taskhawk.task_manager import Task
+        from taskhawk.task_manager import Task  # noqa
 
         # support string datetimes
         if isinstance(self.timestamp, str):
@@ -106,7 +108,7 @@ class Message:
     def __eq__(self, other) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
-        return self.as_dict() == other.as_dict()
+        return self.as_dict() == typing.cast(Message, other).as_dict()
 
     @property
     def id(self) -> str:
@@ -117,19 +119,19 @@ class Message:
         return self._metadata
 
     @property
-    def timestamp(self) -> int:
+    def timestamp(self) -> typing.Optional[int]:
         return self._metadata.get('timestamp')
 
     @property
-    def version(self) -> int:
+    def version(self) -> typing.Optional[int]:
         return self._metadata.get('version')
 
     @property
-    def priority(self) -> 'taskhawk.Priority':
+    def priority(self) -> 'Priority':
         return Priority[self._metadata['priority']]
 
     @priority.setter
-    def priority(self, value: 'taskhawk.Priority') -> None:
+    def priority(self, value: 'Priority') -> None:
         self._metadata['priority'] = value.name
 
     @property
@@ -137,7 +139,7 @@ class Message:
         return self._headers
 
     @property
-    def task(self) -> 'taskhawk.Task':
+    def task(self) -> 'Task':
         return self._task
 
     @property

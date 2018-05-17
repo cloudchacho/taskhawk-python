@@ -110,6 +110,7 @@ deps/
 
 # pytest
 .pytest_cache
+.mypy_cache/
 
 # python
 .eggs

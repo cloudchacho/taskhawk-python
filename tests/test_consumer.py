@@ -7,7 +7,7 @@ import pytest
 from taskhawk import consumer
 from taskhawk.conf import settings
 from taskhawk.consumer import (
-    fetch_and_process_messages, _load_and_validate_message, get_queue_name, message_handler,
+    fetch_and_process_messages, get_queue_name, message_handler,
     listen_for_messages, message_handler_lambda, process_messages_for_lambda_consumer, message_handler_sqs,
     get_queue, get_queue_messages, WAIT_TIME_SECONDS, _get_sqs_resource,
 )
@@ -37,59 +37,46 @@ def test_get_queue(mock_get_sqs_resource):
     mock_get_sqs_resource.return_value.get_queue_by_name.assert_called_once_with(QueueName=queue_name)
 
 
-@mock.patch('taskhawk.consumer.Message', autospec=True)
-def test__load_and_validate_message(mock_message, message_data):
-    _load_and_validate_message(message_data)
-    mock_message.assert_called_once_with(message_data)
-    mock_message.return_value.validate.assert_called_once_with()
-
-
 @mock.patch('taskhawk.consumer.Message.call_task', autospec=True)
-@mock.patch('taskhawk.consumer._load_and_validate_message', autospec=True)
 class TestMessageHandler:
-    def test_success(self, mock_load_and_validate_message, mock_call_task, message_data, message):
-        mock_load_and_validate_message.return_value = message
+    def test_success(self, mock_call_task, message_data, message):
         receipt = str(uuid.uuid4())
         message_handler(json.dumps(message_data), receipt)
-        mock_load_and_validate_message.assert_called_once_with(message_data)
         mock_call_task.assert_called_once_with(message, receipt)
 
     def test_fails_on_invalid_json(self, *mocks):
         with pytest.raises(ValueError):
             message_handler("bad json", None)
 
-    def test_fails_on_validation_error(self, mock_load_and_validate_message, mock_call_task, message_data):
+    @mock.patch('taskhawk.consumer.Message.validate', autospec=True)
+    def test_fails_on_validation_error(self, mock_validate, mock_call_task, message_data):
         error_message = 'Invalid message body'
-        mock_load_and_validate_message.side_effect = ValidationError(error_message)
+        mock_validate.side_effect = ValidationError(error_message)
         with pytest.raises(ValidationError):
             message_handler(json.dumps(message_data), None)
         mock_call_task.assert_not_called()
 
-    def test_fails_on_task_failure(self, mock_load_and_validate_message, mock_call_task, message_data, message):
-        mock_load_and_validate_message.return_value = message
+    def test_fails_on_task_failure(self, mock_call_task, message_data, message):
         mock_call_task.side_effect = Exception
         with pytest.raises(mock_call_task.side_effect):
             message_handler(json.dumps(message_data), None)
 
-    def test_special_handling_logging_error(self, mock_load_and_validate_message, mock_call_task, message_data, message):
-        mock_load_and_validate_message.return_value = message
+    def test_special_handling_logging_error(self, mock_call_task, message_data, message):
         mock_call_task.side_effect = LoggingException('foo', extra={'mickey': 'mouse'})
         with pytest.raises(LoggingException), mock.patch.object(consumer.logger, 'exception') as logging_mock:
             message_handler(json.dumps(message_data), None)
 
             logging_mock.assert_called_once_with('foo', extra={'mickey': 'mouse'})
 
-    def test_special_handling_retry_error(self, mock_load_and_validate_message, mock_call_task, message_data, message):
-        mock_load_and_validate_message.return_value = message
+    def test_special_handling_retry_error(self, mock_call_task, message_data, message):
+
         mock_call_task.side_effect = RetryException
         with pytest.raises(mock_call_task.side_effect), mock.patch.object(consumer.logger, 'info') as logging_mock:
             message_handler(json.dumps(message_data), None)
 
             logging_mock.assert_called_once()
 
-    def test_special_handling_ignore_exception(self, mock_load_and_validate_message, mock_call_task, message_data,
-                                               message):
-        mock_load_and_validate_message.return_value = message
+    def test_special_handling_ignore_exception(self, mock_call_task, message_data, message):
         mock_call_task.side_effect = IgnoreException
         # no exception raised
         with mock.patch.object(consumer.logger, 'info') as logging_mock:

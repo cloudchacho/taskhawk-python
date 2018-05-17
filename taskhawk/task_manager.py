@@ -8,7 +8,7 @@ from taskhawk.exceptions import ConfigurationError, TaskNotFound
 from taskhawk.publisher import publish
 
 
-_ALL_TASKS = {}
+_ALL_TASKS: dict = {}
 
 
 def task(*args, priority: Priority = Priority.default, name: typing.Optional[str] = None) -> typing.Callable:
@@ -24,7 +24,7 @@ def task(*args, priority: Priority = Priority.default, name: typing.Optional[str
 
     Additional methods available on tasks are described by :class:`taskhawk.Task` class
     """
-    def _decorator(fn: typing.Callable) -> typing.Callable:
+    def _decorator(fn: typing.Any) -> typing.Callable:
         task_name = name or f'{fn.__module__}.{fn.__name__}'
         existing_task = _ALL_TASKS.get(task_name)
         if existing_task is not None:
@@ -50,12 +50,12 @@ class AsyncInvocation:
     Represents one particular invocation of a task. An invocation may be customized using `with_` functions,
     and these won't affect other invocations of the same task. Invocations may also be saved and re-used multiple times.
     """
-    def __init__(self, task_: 'taskhawk.Task'):
+    def __init__(self, task_: 'Task') -> None:
         self._task = task_
-        self._headers = {}
-        self._priority = None
+        self._headers: dict = {}
+        self._priority: typing.Optional[Priority] = None
 
-    def with_headers(self, **headers) -> 'taskhawk.AsyncInvocation':
+    def with_headers(self, **headers) -> 'AsyncInvocation':
         """
         Customize headers for this invocation
         :param headers: Arbitrary headers dict
@@ -64,7 +64,7 @@ class AsyncInvocation:
         self._headers.update(headers)
         return self
 
-    def with_priority(self, priority: Priority) -> 'taskhawk.AsyncInvocation':
+    def with_priority(self, priority: Priority) -> 'AsyncInvocation':
         """
         Customize priority for this invocation
         :param priority: Custom priority to attach to this invocation
@@ -90,7 +90,6 @@ class AsyncInvocation:
         )
         message.priority = self._priority or self._task.priority
         if settings.TASKHAWK_SYNC:
-            message.validate()
             message.call_task(None)
         else:
             publish(message)
@@ -204,7 +203,7 @@ class Task:
         """
         AsyncInvocation(self).dispatch(*args, **kwargs)
 
-    def call(self, message: 'taskhawk.models.Message', receipt: typing.Optional[str]) -> None:
+    def call(self, message: 'Message', receipt: typing.Optional[str]) -> None:
         """
         Calls the task with this message
         :param message: The message
@@ -228,7 +227,7 @@ class Task:
         return f'Taskhawk task: {self.name}'
 
     @classmethod
-    def find_by_name(cls, name: str) -> 'taskhawk.Task':
+    def find_by_name(cls, name: str) -> 'Task':
         """
         Finds a task by name
         :param name: task name (including module)

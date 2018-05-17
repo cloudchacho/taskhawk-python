@@ -23,7 +23,7 @@ with open('taskhawk/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
 tests_require = [
-    'pytest', 'flake8', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov'
+    'pytest', 'flake8', 'mypy', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov'
 ]
 
 setup(
@@ -65,6 +65,9 @@ setup(
     python_requires='>=3.6',
 
     keywords='python taskhawk',
+
+    # https://mypy.readthedocs.io/en/latest/installed_packages.html
+    package_data={'taskhawk': ['py.typed']},
 
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'tests.*']),
 

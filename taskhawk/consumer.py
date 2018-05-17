@@ -46,16 +46,10 @@ def log_invalid_message(message_json: str) -> None:
     })
 
 
-def _load_and_validate_message(data: dict) -> Message:
-    message = Message(data)
-    message.validate()
-    return message
-
-
 def message_handler(message_json: str, receipt: typing.Optional[str]) -> None:
     try:
         message_body = json.loads(message_json)
-        message = _load_and_validate_message(message_body)
+        message = Message(message_body)
     except (ValidationError, ValueError):
         log_invalid_message(message_json)
         raise
