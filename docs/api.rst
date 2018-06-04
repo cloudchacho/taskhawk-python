@@ -16,7 +16,8 @@ API reference
    :undoc-members:
    :member-order: bysource
 
-.. autofunction:: requeue_dead_letter, extend_visibility_timeout
+.. autofunction:: requeue_dead_letter
+.. autofunction:: extend_visibility_timeout
 
 Exceptions
 ++++++++++
