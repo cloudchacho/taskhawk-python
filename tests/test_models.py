@@ -25,7 +25,10 @@ class TestMessageMethods:
 
     def test_new(self, message_data):
         message = Message.new(
-            message_data['task'], message_data['args'], message_data['kwargs'], message_data['id'],
+            message_data['task'],
+            message_data['args'],
+            message_data['kwargs'],
+            message_data['id'],
             message_data['headers'],
         )
 
@@ -60,8 +63,10 @@ class TestMessageMethods:
         with pytest.raises(ValidationError):
             Message(message_data).validate()
 
-    @pytest.mark.parametrize('missing_data', ['id', 'metadata', 'metadata__version', 'metadata__timestamp',
-                                              'headers', 'task', 'args', 'kwargs'])
+    @pytest.mark.parametrize(
+        'missing_data',
+        ['id', 'metadata', 'metadata__version', 'metadata__timestamp', 'headers', 'task', 'args', 'kwargs'],
+    )
     def test_validate_missing_data(self, missing_data, message_data):
         if missing_data.startswith('metadata__'):
             message_data['metadata'][missing_data.split('__')[1]] = None

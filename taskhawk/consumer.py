@@ -36,15 +36,11 @@ def get_queue(queue_name: str):
 
 
 def log_received_message(message_body: dict) -> None:
-    logger.debug('Received message', extra={
-        'message_body': message_body,
-    })
+    logger.debug('Received message', extra={'message_body': message_body})
 
 
 def log_invalid_message(message_json: str) -> None:
-    logger.error('Received invalid message', extra={
-        'message_json': message_json,
-    })
+    logger.error('Received invalid message', extra={'message_json': message_json})
 
 
 def message_handler(message_json: str, receipt: typing.Optional[str]) -> None:
@@ -148,8 +144,12 @@ def process_messages_for_lambda_consumer(lambda_event: dict) -> None:
 
 
 def listen_for_messages(
-        priority: Priority, num_messages: int = 1, visibility_timeout_s: int = None, loop_count: int = None,
-        shutdown_event: threading.Event = None) -> None:
+    priority: Priority,
+    num_messages: int = 1,
+    visibility_timeout_s: int = None,
+    loop_count: int = None,
+    shutdown_event: threading.Event = None,
+) -> None:
     """
     Starts a taskhawk listener for message types provided and calls the task function with given `args` and `kwargs`.
 
@@ -180,6 +180,7 @@ def listen_for_messages(
     for count in itertools.count():
         if (loop_count is None or count < loop_count) and not shutdown_event.is_set():
             fetch_and_process_messages(
-                queue_name, queue, num_messages=num_messages, visibility_timeout=visibility_timeout_s)
+                queue_name, queue, num_messages=num_messages, visibility_timeout=visibility_timeout_s
+            )
         else:
             break

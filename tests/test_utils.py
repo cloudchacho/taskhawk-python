@@ -32,9 +32,7 @@ def test_extend_visibility_timeout(mock_get_queue_name, mock_get_sqs_client):
 
     mock_get_queue_name.assert_called_once_with(priority)
     mock_get_sqs_client.assert_called_once_with()
-    mock_get_sqs_client.return_value.get_queue_url.assert_called_once_with(
-        QueueName=mock_get_queue_name.return_value
-    )
+    mock_get_sqs_client.return_value.get_queue_url.assert_called_once_with(QueueName=mock_get_queue_name.return_value)
     mock_get_sqs_client.return_value.change_message_visibility.assert_called_once_with(
         QueueUrl=mock_get_sqs_client.return_value.get_queue_url.return_value['QueueUrl'],
         ReceiptHandle=receipt,

@@ -16,4 +16,4 @@ from .consumer import listen_for_messages, process_messages_for_lambda_consumer 
 from .commands import requeue_dead_letter  # noqa
 from .exceptions import *  # noqa
 from .publisher import publish  # noqa
-from .utils import extend_visibility_timeout # noqa
+from .utils import extend_visibility_timeout  # noqa

@@ -17,9 +17,7 @@ def _get_sqs_client():
 
 
 def _get_queue_url(client, queue_name: str) -> str:
-    response = client.get_queue_url(
-        QueueName=queue_name,
-    )
+    response = client.get_queue_url(QueueName=queue_name)
     return response['QueueUrl']
 
 
@@ -34,8 +32,4 @@ def extend_visibility_timeout(priority: Priority, receipt: str, visibility_timeo
 
     queue_url = _get_queue_url(client, queue_name)
 
-    client.change_message_visibility(
-        QueueUrl=queue_url,
-        ReceiptHandle=receipt,
-        VisibilityTimeout=visibility_timeout_s,
-    )
+    client.change_message_visibility(QueueUrl=queue_url, ReceiptHandle=receipt, VisibilityTimeout=visibility_timeout_s)

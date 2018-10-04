@@ -24,11 +24,7 @@ _DEFAULTS = {
 
 
 # List of settings that may be in string import notation.
-_IMPORT_STRINGS = (
-    'TASKHAWK_DEFAULT_HEADERS',
-    'TASKHAWK_PRE_PROCESS_HOOK',
-    'TASKHAWK_TASK_CLASS',
-)
+_IMPORT_STRINGS = ('TASKHAWK_DEFAULT_HEADERS', 'TASKHAWK_PRE_PROCESS_HOOK', 'TASKHAWK_TASK_CLASS')
 
 
 def default_headers_hook():
@@ -48,6 +44,7 @@ class _LazySettings(object):
     Any setting with string import paths will be automatically resolved
     and return the class, rather than the string literal.
     """
+
     def __init__(self):
         self._defaults = _DEFAULTS
         self._import_strings = _IMPORT_STRINGS
@@ -59,6 +56,7 @@ class _LazySettings(object):
             # automatically import Django settings in Django projects
             try:
                 from django.conf import settings as django_settings
+
                 self._user_settings = django_settings
             except ImportError:
                 pass

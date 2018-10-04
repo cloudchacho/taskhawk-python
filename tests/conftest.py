@@ -6,6 +6,7 @@ import pytest
 
 from taskhawk import Message
 import taskhawk.conf
+
 # initialize tasks
 import tests.tasks  # noqa
 
@@ -40,22 +41,11 @@ def settings():
 def _message_data():
     return {
         "id": "b1328174-a21c-43d3-b303-964dfcc76efc",
-        "metadata": {
-            "timestamp": int(time.time() * 1000),
-            "version": "1.0",
-            "priority": "default"
-        },
-        "headers": {
-            'request_id': str(uuid.uuid4()),
-        },
+        "metadata": {"timestamp": int(time.time() * 1000), "version": "1.0", "priority": "default"},
+        "headers": {'request_id': str(uuid.uuid4())},
         "task": "tests.tasks.send_email",
-        "args": [
-            "example@email.com",
-            "Hello!",
-        ],
-        "kwargs": {
-            "from_email": "hello@spammer.com"
-        },
+        "args": ["example@email.com", "Hello!"],
+        "kwargs": {"from_email": "hello@spammer.com"},
     }
 
 

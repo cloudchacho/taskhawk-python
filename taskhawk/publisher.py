@@ -18,10 +18,7 @@ log = logging.getLogger(__name__)
 def _get_sns_client():
     # https://botocore.readthedocs.io/en/stable/reference/config.html
     # seconds
-    config = Config(
-        connect_timeout=settings.AWS_CONNECT_TIMEOUT_S,
-        read_timeout=settings.AWS_READ_TIMEOUT_S,
-    )
+    config = Config(connect_timeout=settings.AWS_CONNECT_TIMEOUT_S, read_timeout=settings.AWS_READ_TIMEOUT_S)
 
     return boto3.client(
         'sns',
@@ -48,33 +45,16 @@ def _get_sns_topic(priority: Priority) -> str:
 @retry(stop_max_attempt_number=3, stop_max_delay=3000)
 def _publish_over_sns(topic: str, message_json: str, message_attributes: dict) -> None:
     # transform (http://boto.cloudhackers.com/en/latest/ref/sns.html#boto.sns.SNSConnection.publish)
-    message_attributes = {
-        k: {
-            'DataType': 'String',
-            'StringValue': str(v),
-        } for k, v in message_attributes.items()
-    }
+    message_attributes = {k: {'DataType': 'String', 'StringValue': str(v)} for k, v in message_attributes.items()}
     client = _get_sns_client()
-    client.publish(
-        TopicArn=topic,
-        Message=message_json,
-        MessageAttributes=message_attributes,
-    )
+    client.publish(TopicArn=topic, Message=message_json, MessageAttributes=message_attributes)
 
 
 @retry(stop_max_attempt_number=3, stop_max_delay=3000)
 def _publish_over_sqs(queue, message_json: str, message_attributes: dict) -> dict:
     # transform (http://boto3.readthedocs.io/en/latest/reference/services/sqs.html#SQS.Client.send_message)
-    message_attributes = {
-        k: {
-            'DataType': 'String',
-            'StringValue': str(v),
-        } for k, v in message_attributes.items()
-    }
-    return queue.send_message(
-        MessageBody=message_json,
-        MessageAttributes=message_attributes,
-    )
+    message_attributes = {k: {'DataType': 'String', 'StringValue': str(v)} for k, v in message_attributes.items()}
+    return queue.send_message(MessageBody=message_json, MessageAttributes=message_attributes)
 
 
 def _log_published_message(message_body: dict) -> None:

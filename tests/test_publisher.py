@@ -9,7 +9,11 @@ from taskhawk import Priority
 from taskhawk.conf import settings
 from taskhawk.models import Message
 from taskhawk.publisher import (
-    publish, _get_sns_topic, _convert_to_json, _publish_over_sns, _publish_over_sqs,
+    publish,
+    _get_sns_topic,
+    _convert_to_json,
+    _publish_over_sns,
+    _publish_over_sqs,
     _get_sns_client,
 )
 
@@ -39,8 +43,10 @@ def test_get_sns_client(mock_boto3_client):
     ],
 )
 def test__get_sns_topic(priority, suffix):
-    assert _get_sns_topic(priority) == f'arn:aws:sns:{settings.AWS_REGION}:{settings.AWS_ACCOUNT_ID}:taskhawk-' \
-                                       f'{settings.TASKHAWK_QUEUE.lower()}{suffix}'
+    assert (
+        _get_sns_topic(priority) == f'arn:aws:sns:{settings.AWS_REGION}:{settings.AWS_ACCOUNT_ID}:taskhawk-'
+        f'{settings.TASKHAWK_QUEUE.lower()}{suffix}'
+    )
 
 
 @mock.patch('taskhawk.publisher._get_sns_client', autospec=True)
@@ -55,12 +61,7 @@ def test__publish_over_sns(mock_get_sns_client, message):
     mock_get_sns_client.return_value.publish.assert_called_once_with(
         TopicArn=topic,
         Message=message_json,
-        MessageAttributes={
-            k: {
-                'DataType': 'String',
-                'StringValue': str(v),
-            } for k, v in message.headers.items()
-        },
+        MessageAttributes={k: {'DataType': 'String', 'StringValue': str(v)} for k, v in message.headers.items()},
     )
 
 
@@ -72,12 +73,7 @@ def test__publish_over_sqs(message):
 
     queue.send_message.assert_called_once_with(
         MessageBody=message_json,
-        MessageAttributes={
-            k: {
-                'DataType': 'String',
-                'StringValue': str(v),
-            } for k, v in message.headers.items()
-        },
+        MessageAttributes={k: {'DataType': 'String', 'StringValue': str(v)} for k, v in message.headers.items()},
     )
 
 
@@ -110,9 +106,7 @@ def test_publish_non_lambda(mock_publish_over_sqs, mock_convert_to_json, mock_ge
     mock_get_queue_name.assert_called_once_with(message.priority)
     mock_get_queue.assert_called_once_with(mock_get_queue_name.return_value)
     mock_publish_over_sqs.assert_called_once_with(
-        mock_get_queue.return_value,
-        mock_convert_to_json.return_value,
-        message.headers
+        mock_get_queue.return_value, mock_convert_to_json.return_value, message.headers
     )
     mock_convert_to_json.assert_called_once_with(message.as_dict())
 
@@ -129,9 +123,5 @@ def test_publish_lambda(mock_publish_over_sns, mock_convert_to_json, message, se
     publish(message)
 
     topic = _get_sns_topic(message.priority)
-    mock_publish_over_sns.assert_called_once_with(
-        topic,
-        mock_convert_to_json.return_value,
-        message.headers
-    )
+    mock_publish_over_sns.assert_called_once_with(topic, mock_convert_to_json.return_value, message.headers)
     mock_convert_to_json.assert_called_once_with(message.as_dict())

@@ -7,12 +7,20 @@ import pytest
 from taskhawk import consumer
 from taskhawk.conf import settings
 from taskhawk.consumer import (
-    fetch_and_process_messages, get_queue_name, message_handler,
-    listen_for_messages, message_handler_lambda, process_messages_for_lambda_consumer, message_handler_sqs,
-    get_queue, get_queue_messages, WAIT_TIME_SECONDS, _get_sqs_resource,
+    fetch_and_process_messages,
+    get_queue_name,
+    message_handler,
+    listen_for_messages,
+    message_handler_lambda,
+    process_messages_for_lambda_consumer,
+    message_handler_sqs,
+    get_queue,
+    get_queue_messages,
+    WAIT_TIME_SECONDS,
+    _get_sqs_resource,
 )
 from taskhawk.models import Priority
-from taskhawk.exceptions import (RetryException, ValidationError, LoggingException, IgnoreException)
+from taskhawk.exceptions import RetryException, ValidationError, LoggingException, IgnoreException
 
 
 @mock.patch('taskhawk.consumer.boto3.resource', autospec=True)
@@ -185,10 +193,9 @@ class TestFetchAndProcessMessages:
 
         fetch_and_process_messages(queue_name, queue)
 
-        pre_process_hook.assert_has_calls([
-            mock.call(queue_name=queue_name, sqs_queue_message=x)
-            for x in mock_get_messages.return_value
-        ])
+        pre_process_hook.assert_has_calls(
+            [mock.call(queue_name=queue_name, sqs_queue_message=x) for x in mock_get_messages.return_value]
+        )
 
 
 @mock.patch('taskhawk.consumer.message_handler_lambda', autospec=True)
@@ -207,20 +214,14 @@ class TestProcessMessagesForLambdaConsumer:
                 "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
                 "Message": "Hello from SNS!",
                 "MessageAttributes": {
-                    "request_id": {
-                        "Type": "String",
-                        "Value": str(uuid.uuid4())
-                    },
-                    "TestBinary": {
-                        "Type": "Binary",
-                        "Value": "TestBinary"
-                    }
+                    "request_id": {"Type": "String", "Value": str(uuid.uuid4())},
+                    "TestBinary": {"Type": "Binary", "Value": "TestBinary"},
                 },
                 "Type": "Notification",
                 "UnsubscribeUrl": "EXAMPLE",
                 "TopicArn": "arn",
-                "Subject": "TestInvoke"
-            }
+                "Subject": "TestInvoke",
+            },
         }
         mock_record2 = {
             "EventVersion": "1.0",
@@ -234,32 +235,18 @@ class TestProcessMessagesForLambdaConsumer:
                 "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
                 "Message": "Hello from SNS!",
                 "MessageAttributes": {
-                    "request_id": {
-                        "Type": "String",
-                        "Value": str(uuid.uuid4())
-                    },
-                    "TestBinary": {
-                        "Type": "Binary",
-                        "Value": "TestBinary"
-                    }
+                    "request_id": {"Type": "String", "Value": str(uuid.uuid4())},
+                    "TestBinary": {"Type": "Binary", "Value": "TestBinary"},
                 },
                 "Type": "Notification",
                 "UnsubscribeUrl": "EXAMPLE",
                 "TopicArn": "arn",
-                "Subject": "TestInvoke"
-            }
+                "Subject": "TestInvoke",
+            },
         }
-        event = {
-            "Records": [
-                mock_record1,
-                mock_record2
-            ]
-        }
+        event = {"Records": [mock_record1, mock_record2]}
         process_messages_for_lambda_consumer(event)
-        mock_message_handler.assert_has_calls([
-            mock.call(mock_record1),
-            mock.call(mock_record2),
-        ])
+        mock_message_handler.assert_has_calls([mock.call(mock_record1), mock.call(mock_record2)])
 
     def test_logs_and_preserves_message(self, mock_handler):
         event = {'Records': [mock.MagicMock()]}
@@ -281,6 +268,5 @@ class TestListenForMessages:
         queue_name = get_queue_name(Priority.high)
         mock_get_queue.assert_called_once_with(queue_name)
         mock_fetch_and_process.assert_called_once_with(
-            queue_name, mock_get_queue.return_value, num_messages=num_messages,
-            visibility_timeout=visibility_timeout_s,
+            queue_name, mock_get_queue.return_value, num_messages=num_messages, visibility_timeout=visibility_timeout_s
         )

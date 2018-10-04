@@ -12,6 +12,7 @@ class PartialFailure(Exception):
     """
     Error indicating either send_messages or delete_messages API call failed partially
     """
+
     def __init__(self, result, *args):
         self.success_count = len(result['Successful'])
         self.failure_count = len(result['Failed'])
@@ -25,14 +26,9 @@ def _enqueue_messages(queue, queue_messages) -> None:
     result = queue.send_messages(
         Entries=[
             funcy.merge(
-                {
-                    'Id': queue_message.message_id,
-                    'MessageBody': queue_message.body,
-                },
-                {
-                    'MessageAttributes': queue_message.message_attributes
-                } if queue_message.message_attributes else {},
-                params
+                {'Id': queue_message.message_id, 'MessageBody': queue_message.body},
+                {'MessageAttributes': queue_message.message_attributes} if queue_message.message_attributes else {},
+                params,
             )
             for queue_message in queue_messages
         ]
@@ -46,7 +42,7 @@ def get_dead_letter_queue(queue):
     return get_queue(queue_name)
 
 
-def requeue_dead_letter(priority: Priority, num_messages: int=10, visibility_timeout: int=None) -> None:
+def requeue_dead_letter(priority: Priority, num_messages: int = 10, visibility_timeout: int = None) -> None:
     """
     Re-queues everything in the Taskhawk DLQ back into the Taskhawk queue.
 
@@ -75,13 +71,7 @@ def requeue_dead_letter(priority: Priority, num_messages: int=10, visibility_tim
 
         _enqueue_messages(queue, queue_messages)
         dead_letter_queue.delete_messages(
-            Entries=[
-                {
-                    'Id': message.message_id,
-                    'ReceiptHandle': message.receipt_handle
-                }
-                for message in queue_messages
-            ]
+            Entries=[{'Id': message.message_id, 'ReceiptHandle': message.receipt_handle} for message in queue_messages]
         )
 
         logging.info("Re-queued {} messages".format(len(queue_messages)))

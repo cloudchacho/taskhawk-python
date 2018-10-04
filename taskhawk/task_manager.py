@@ -24,6 +24,7 @@ def task(*args, priority: Priority = Priority.default, name: typing.Optional[str
 
     Additional methods available on tasks are described by :class:`taskhawk.Task` class
     """
+
     def _decorator(fn: typing.Any) -> typing.Callable:
         task_name = name or f'{fn.__module__}.{fn.__name__}'
         existing_task = _ALL_TASKS.get(task_name)
@@ -50,6 +51,7 @@ class AsyncInvocation:
     Represents one particular invocation of a task. An invocation may be customized using `with_` functions,
     and these won't affect other invocations of the same task. Invocations may also be saved and re-used multiple times.
     """
+
     def __init__(self, task_: 'Task') -> None:
         self._task = task_
         self._headers: dict = {}
@@ -118,6 +120,7 @@ class Task:
                                 .dispatch('example@email.com')
 
     """
+
     def __init__(self, fn: typing.Callable, priority: Priority, name: str) -> None:
         self._name = name
         self._fn = fn

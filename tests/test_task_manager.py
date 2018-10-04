@@ -71,9 +71,7 @@ def test_task_decorator_custom_task_class(settings):
 
 
 def default_headers() -> dict:
-    return {
-        'request_id': str(uuid.uuid4()),
-    }
+    return {'request_id': str(uuid.uuid4())}
 
 
 @pytest.fixture(name='invocation')
@@ -245,7 +243,7 @@ class TestTask:
         _f = mock.MagicMock()
 
         @task(name='test_call')
-        def f(to: str, subject: str, from_email: str=None):
+        def f(to: str, subject: str, from_email: str = None):
             _f(to, subject, from_email=from_email)
 
         task_obj = f.task
@@ -257,7 +255,7 @@ class TestTask:
         _f = mock.MagicMock()
 
         @task(name='test_call_headers')
-        def f(to: str, subject: str, from_email: str=None, headers=None):
+        def f(to: str, subject: str, from_email: str = None, headers=None):
             _f(to, subject, from_email=from_email, headers=headers)
 
         task_obj = f.task
@@ -269,17 +267,13 @@ class TestTask:
         _f = mock.MagicMock()
 
         @task(name='test_call_metadata')
-        def f(to: str, subject: str, metadata, from_email: str=None):
+        def f(to: str, subject: str, metadata, from_email: str = None):
             _f(to, subject, metadata, from_email=from_email)
 
         task_obj = f.task
         receipt = str(uuid.uuid4())
         task_obj.call(message, receipt)
-        metadata = funcy.merge(message.metadata, {
-            'id': message.id,
-            'receipt': receipt,
-            'priority': Priority.default,
-        })
+        metadata = funcy.merge(message.metadata, {'id': message.id, 'receipt': receipt, 'priority': Priority.default})
         _f.assert_called_once_with(*message.args, metadata, **message.kwargs)
 
     def test_find_by_name(self):

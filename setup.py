@@ -22,67 +22,42 @@ _version_re = re.compile(r'VERSION\s+=\s+(.*)')
 with open('taskhawk/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
-tests_require = [
-    'pytest', 'flake8', 'mypy', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov'
-]
+tests_require = ['pytest', 'flake8', 'mypy', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov', 'black']
 
 setup(
     name='taskhawk',
-
     version=version,
-
     description='Taskhawk Python Library',
     long_description=long_description,
-
     url='https://github.com/Automatic/taskhawk-python',
-
     author='Automatic Labs',
-
     license='Apache Software License (Apache License 2.0)',
-
     maintainer='Aniruddha Maru',
-
     maintainer_email='aniruddhamaru@gmail.com',
-
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Natural Language :: English',
-
         'Development Status :: 5 - Production/Stable',
-
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-
         'Topic :: Software Development :: Libraries :: Python Modules',
-
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-
         'License :: OSI Approved :: Apache Software License',
     ],
-
     python_requires='>=3.6',
-
     keywords='python taskhawk',
-
     # https://mypy.readthedocs.io/en/latest/installed_packages.html
     package_data={'taskhawk': ['py.typed']},
-
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'tests.*']),
-
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['funcy', 'retrying', 'boto3', 'arrow'],
-
     tests_require=tests_require,
-
-    setup_requires=[
-        'pytest-runner'
-    ],
-
+    setup_requires=['pytest-runner'],
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
@@ -92,6 +67,5 @@ setup(
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },
-
     include_package_data=True,
 )

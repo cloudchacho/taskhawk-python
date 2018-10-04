@@ -15,6 +15,7 @@ class Message:
     """
     Model for Taskhawk messages. All properties of a message should be considered immutable.
     """
+
     CURRENT_VERSION = '1.0'
     VERSIONS = ['1.0']
 
@@ -64,8 +65,16 @@ class Message:
             except (ValueError, arrow.parser.ParserError):
                 raise ValidationError
 
-        if (not self.id or not self.version or self.version not in self.VERSIONS or not self.timestamp or
-                self.headers is None or not self.task_name or self.args is None or self.kwargs is None):
+        if (
+            not self.id
+            or not self.version
+            or self.version not in self.VERSIONS
+            or not self.timestamp
+            or self.headers is None
+            or not self.task_name
+            or self.args is None
+            or self.kwargs is None
+        ):
             raise ValidationError
         try:
             self._task = Task.find_by_name(self.task_name)
@@ -74,14 +83,12 @@ class Message:
 
     @classmethod
     def _create_metadata(cls) -> dict:
-        return {
-            'priority': Priority.default.name,
-            'timestamp': int(time.time() * 1000),
-            'version': cls.CURRENT_VERSION
-        }
+        return {'priority': Priority.default.name, 'timestamp': int(time.time() * 1000), 'version': cls.CURRENT_VERSION}
 
     @classmethod
-    def new(cls, task: str, args: tuple=None, kwargs: dict=None, msg_id: str=None, headers: dict=None) -> 'Message':
+    def new(
+        cls, task: str, args: tuple = None, kwargs: dict = None, msg_id: str = None, headers: dict = None
+    ) -> 'Message':
         """
         Creates Message object given type, schema version and data. This is typically used by the publisher code.
         :param task: The task name
@@ -90,14 +97,16 @@ class Message:
         :param msg_id: Optional message identifier.  If unset, a random UUID4 will be generated.
         :param headers: Optional additional headers
         """
-        return Message({
-            'id': msg_id or str(uuid.uuid4()),
-            'metadata': cls._create_metadata(),
-            'headers': headers or {},
-            'task': task,
-            'args': args or [],
-            'kwargs': kwargs or {},
-        })
+        return Message(
+            {
+                'id': msg_id or str(uuid.uuid4()),
+                'metadata': cls._create_metadata(),
+                'headers': headers or {},
+                'task': task,
+                'args': args or [],
+                'kwargs': kwargs or {},
+            }
+        )
 
     def call_task(self, receipt: typing.Optional[str]) -> None:
         """
