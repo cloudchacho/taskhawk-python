@@ -17,6 +17,7 @@ _DEFAULTS = {
     'IS_LAMBDA_APP': False,
     'TASKHAWK_DEFAULT_HEADERS': 'taskhawk.conf.default_headers_hook',
     'TASKHAWK_PRE_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
+    'TASKHAWK_POST_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_QUEUE': None,
     'TASKHAWK_SYNC': False,
     'TASKHAWK_TASK_CLASS': 'taskhawk.task_manager.Task',
@@ -24,7 +25,12 @@ _DEFAULTS = {
 
 
 # List of settings that may be in string import notation.
-_IMPORT_STRINGS = ('TASKHAWK_DEFAULT_HEADERS', 'TASKHAWK_PRE_PROCESS_HOOK', 'TASKHAWK_TASK_CLASS')
+_IMPORT_STRINGS = (
+    'TASKHAWK_DEFAULT_HEADERS',
+    'TASKHAWK_PRE_PROCESS_HOOK',
+    'TASKHAWK_POST_PROCESS_HOOK',
+    'TASKHAWK_TASK_CLASS',
+)
 
 
 def default_headers_hook():

@@ -105,6 +105,10 @@ It's recommended that this function be declared with ``**kwargs`` so it doesn't 
 
 optional; fully-qualified function name
 
+**TASKHAWK_POST_PROCESS_HOOK**
+
+Same as ``TASKHAWK_PRE_PROCESS_HOOK`` but executed after task processing.
+
 **TASKHAWK_QUEUE**
 
 The name of the taskhawk queue (exclude the ``TASKHAWK-`` prefix).

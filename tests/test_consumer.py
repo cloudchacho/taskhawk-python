@@ -139,6 +139,7 @@ def test_get_queue_name(priority, suffix):
 
 
 pre_process_hook = mock.MagicMock()
+post_process_hook = mock.MagicMock()
 
 
 @mock.patch('taskhawk.consumer.get_queue_messages', autospec=True)
@@ -196,6 +197,35 @@ class TestFetchAndProcessMessages:
         pre_process_hook.assert_has_calls(
             [mock.call(queue_name=queue_name, sqs_queue_message=x) for x in mock_get_messages.return_value]
         )
+
+    def test_post_process_hook(self, mock_message_handler, mock_get_messages, settings):
+        queue_name = 'my-queue'
+        queue = mock.MagicMock()
+        settings.TASKHAWK_POST_PROCESS_HOOK = 'tests.test_consumer.post_process_hook'
+
+        mock_get_messages.return_value = [mock.MagicMock(), mock.MagicMock()]
+
+        fetch_and_process_messages(queue_name, queue)
+
+        post_process_hook.assert_has_calls(
+            [mock.call(queue_name=queue_name, sqs_queue_message=x) for x in mock_get_messages.return_value]
+        )
+
+    def test_post_process_hook_exception_raised(self, mock_message_handler, mock_get_messages, settings):
+        queue_name = 'my-queue'
+        queue = mock.MagicMock()
+        settings.TASKHAWK_POST_PROCESS_HOOK = 'tests.test_consumer.post_process_hook'
+
+        mock_message = mock.MagicMock()
+        mock_get_messages.return_value = [mock_message]
+
+        post_process_hook.reset_mock()
+        post_process_hook.side_effect = RuntimeError('fail')
+
+        fetch_and_process_messages(queue_name, queue)
+
+        post_process_hook.assert_called_once_with(queue_name=queue_name, sqs_queue_message=mock_message)
+        mock_message.delete.assert_not_called()
 
 
 @mock.patch('taskhawk.consumer.message_handler_lambda', autospec=True)
