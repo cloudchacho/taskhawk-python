@@ -1,11 +1,11 @@
 from unittest import mock
 import uuid
 
-import funcy
 import pytest
 
-from taskhawk.task_manager import _ALL_TASKS, Task
-from taskhawk import task, Priority, AsyncInvocation, ConfigurationError, TaskNotFound
+from taskhawk.task_manager import _ALL_TASKS, Task, task, AsyncInvocation
+from taskhawk.models import Priority
+from taskhawk.exceptions import ConfigurationError, TaskNotFound
 from .tasks import send_email
 
 
@@ -70,8 +70,7 @@ def test_task_decorator_custom_task_class(settings):
     assert isinstance(f.task, CustomTask)
 
 
-def default_headers() -> dict:
-    return {'request_id': str(uuid.uuid4())}
+default_headers_hook = mock.MagicMock()
 
 
 @pytest.fixture(name='invocation')
@@ -91,7 +90,7 @@ def test_async_invocation_with_priority(invocation):
 
 
 @mock.patch('taskhawk.task_manager.publish', autospec=True)
-@mock.patch('taskhawk.Message.new')
+@mock.patch('taskhawk.models.Message.new')
 def test_async_invocation_dispatch(mock_message_new, mock_publish, invocation, message):
     args = ('example@email.com', 'Hello!')
     kwargs = {'from_email': 'example@spammer.com'}
@@ -100,13 +99,12 @@ def test_async_invocation_dispatch(mock_message_new, mock_publish, invocation, m
 
     invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
 
-    mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
+    mock_message_new.assert_called_once_with(invocation._task.name, Priority.default, args, kwargs, headers={})
     mock_publish.assert_called_once_with(mock_message_new.return_value)
-    assert mock_message_new.return_value.priority == Priority.default
 
 
 @mock.patch('taskhawk.task_manager.publish', autospec=True)
-@mock.patch('taskhawk.Message.new')
+@mock.patch('taskhawk.models.Message.new')
 def test_async_invocation_dispatch_custom_priority(mock_message_new, mock_publish, invocation, message):
     invocation = invocation.with_priority(Priority.high)
 
@@ -117,18 +115,18 @@ def test_async_invocation_dispatch_custom_priority(mock_message_new, mock_publis
 
     invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
 
-    mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
+    mock_message_new.assert_called_once_with(invocation._task.name, invocation._priority, args, kwargs, headers={})
     mock_publish.assert_called_once_with(mock_message_new.return_value)
-    assert mock_message_new.return_value.priority == Priority.high
 
 
 @mock.patch('uuid.uuid4')
 @mock.patch('taskhawk.task_manager.publish', autospec=True)
-@mock.patch('taskhawk.Message.new')
+@mock.patch('taskhawk.models.Message.new')
 def test_async_invocation_dispatch_default_headers(mock_message_new, mock_publish, mock_uuid, message, settings):
     mock_uuid.return_value = str(uuid.uuid4())
 
-    settings.TASKHAWK_DEFAULT_HEADERS = 'tests.test_task_manager.default_headers'
+    settings.TASKHAWK_DEFAULT_HEADERS = 'tests.test_task_manager.default_headers_hook'
+    default_headers_hook.return_value = {'mickey': 'mouse'}
 
     invocation = AsyncInvocation(send_email.task)
 
@@ -139,27 +137,11 @@ def test_async_invocation_dispatch_default_headers(mock_message_new, mock_publis
 
     invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
 
+    default_headers_hook.assert_called_once_with(task=send_email.task)
     mock_message_new.assert_called_once_with(
-        invocation._task.name, args, kwargs, headers={'request_id': mock_uuid.return_value}
+        invocation._task.name, Priority.default, args, kwargs, headers=default_headers_hook.return_value
     )
     mock_publish.assert_called_once_with(mock_message_new.return_value)
-
-
-@mock.patch('taskhawk.Message.new')
-def test_async_invocation_sync_invoke(mock_message_new, message, settings):
-    settings.TASKHAWK_SYNC = True
-
-    invocation = AsyncInvocation(send_email.task)
-
-    args = ('example@email.com', 'Hello!')
-    kwargs = {'from_email': 'example@spammer.com'}
-
-    mock_message_new.return_value.as_dict.return_value = message.as_dict()
-
-    invocation.dispatch('example@email.com', 'Hello!', from_email='example@spammer.com')
-
-    mock_message_new.assert_called_once_with(invocation._task.name, args, kwargs, headers={})
-    mock_message_new.return_value.call_task.assert_called_once_with(None)
 
 
 class TestTask:
@@ -247,8 +229,7 @@ class TestTask:
             _f(to, subject, from_email=from_email)
 
         task_obj = f.task
-        receipt = str(uuid.uuid4())
-        task_obj.call(message, receipt)
+        task_obj.call(message)
         _f.assert_called_once_with(*message.args, **message.kwargs)
 
     def test_call_headers(self, message):
@@ -259,8 +240,7 @@ class TestTask:
             _f(to, subject, from_email=from_email, headers=headers)
 
         task_obj = f.task
-        receipt = str(uuid.uuid4())
-        task_obj.call(message, receipt)
+        task_obj.call(message)
         _f.assert_called_once_with(*message.args, headers=message.headers, **message.kwargs)
 
     def test_call_metadata(self, message):
@@ -271,10 +251,8 @@ class TestTask:
             _f(to, subject, metadata, from_email=from_email)
 
         task_obj = f.task
-        receipt = str(uuid.uuid4())
-        task_obj.call(message, receipt)
-        metadata = funcy.merge(message.metadata, {'id': message.id, 'receipt': receipt, 'priority': Priority.default})
-        _f.assert_called_once_with(*message.args, metadata, **message.kwargs)
+        task_obj.call(message)
+        _f.assert_called_once_with(*message.args, message.metadata, **message.kwargs)
 
     def test_find_by_name(self):
         assert Task.find_by_name('tests.tasks.send_email') == send_email.task

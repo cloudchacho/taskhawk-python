@@ -22,7 +22,18 @@ _version_re = re.compile(r'VERSION\s+=\s+(.*)')
 with open('taskhawk/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
-tests_require = ['pytest', 'flake8', 'mypy', 'pytest-env', 'ipdb', 'coverage', 'coveralls', 'pytest-cov', 'black']
+tests_require = [
+    'pytest',
+    'flake8',
+    'mypy',
+    'pytest-env',
+    'ipdb',
+    'coverage',
+    'coveralls',
+    'pytest-cov',
+    'black',
+    'moto',
+]
 
 setup(
     name='taskhawk',
@@ -55,7 +66,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['funcy', 'retrying', 'boto3', 'arrow'],
+    install_requires=['funcy', 'retrying', 'arrow'],
     tests_require=tests_require,
     setup_requires=['pytest-runner'],
     # List additional groups of dependencies here (e.g. development
@@ -63,6 +74,8 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
+        'aws': ['boto3'],
+        'gcp': ['google-cloud-pubsub', 'redis'],
         'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],

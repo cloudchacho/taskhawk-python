@@ -2,7 +2,10 @@
 
 set -e
 
-options="-v -s --strict --cov=taskhawk"
+# https://github.com/travis-ci/travis-ci/issues/7940
+export BOTO_CONFIG=/dev/null
+
+options="-v -s --strict --cov=taskhawk --cov-report=html --cov-report=term"
 
 if [ -z "${target}" ]; then
     target="tests"
@@ -14,7 +17,7 @@ mypy taskhawk
 
 python3 -bb -m pytest ${options}
 
-black --skip-string-normalization --skip-numeric-underscore-normalization --line-length=120 --check .
+black --skip-string-normalization --line-length=120 --check .
 
 flake8
 

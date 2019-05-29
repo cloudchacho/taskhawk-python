@@ -1,6 +1,16 @@
 Taskhawk Migration Guide
 ========================
 
+v1 → v2
+~~~~~~~
+
+Update your settings by setting consumer and publisher backends:
+
+.. code:: python
+
+    TASKHAWK_PUBLISHER_BACKEND = 'taskhawk.backends.aws.AWSSNSPublisherBackend'
+    TASKHAWK_CONSUMER_BACKEND = 'taskhawk.backends.aws.AWSSQSConsumerBackend'
+
 CELERY → v1
 ~~~~~~~~~~~~
 

@@ -2,13 +2,18 @@ import logging
 import time
 import uuid
 
+import mock
 import pytest
-
-from taskhawk import Message
-import taskhawk.conf
+from google.cloud import pubsub_v1
+from moto import mock_sqs, mock_sns
 
 # initialize tasks
 import tests.tasks  # noqa
+import taskhawk.conf
+from taskhawk.backends import aws
+from taskhawk.backends.base import TaskhawkBaseBackend, TaskhawkPublisherBaseBackend
+from taskhawk.backends.utils import get_publisher_backend, get_consumer_backend
+from taskhawk.models import Priority, Message
 
 
 def pytest_configure():
@@ -20,21 +25,29 @@ def settings():
     """
     Use this fixture to override settings. Changes are automatically reverted
     """
-    overrides = {}
     original_module = taskhawk.conf.settings._user_settings
 
     class Wrapped:
+        # default to the original module, but allow tests to setattr which would override
         def __getattr__(self, name):
-            return overrides.get(name, getattr(original_module, name))
+            return getattr(original_module, name)
 
     taskhawk.conf.settings._user_settings = Wrapped()
     taskhawk.conf.settings.clear_cache()
+
+    # since consumer/publisher settings may have changed
+    get_publisher_backend.cache_clear()
+    get_consumer_backend.cache_clear()
 
     try:
         yield taskhawk.conf.settings._user_settings
     finally:
         taskhawk.conf.settings._user_settings = original_module
         taskhawk.conf.settings.clear_cache()
+
+        # since consumer/publisher settings may have changed
+        get_publisher_backend.cache_clear()
+        get_consumer_backend.cache_clear()
 
 
 @pytest.fixture(name='message_data')
@@ -52,3 +65,45 @@ def _message_data():
 @pytest.fixture()
 def message(message_data):
     return Message(message_data)
+
+
+@pytest.fixture
+def mock_boto3():
+    settings.AWS_REGION = 'us-west-1'
+    with mock_sqs(), mock_sns(), mock.patch("taskhawk.backends.aws.boto3", autospec=True) as boto3_mock:
+        yield boto3_mock
+
+
+@pytest.fixture()
+def sqs_consumer_backend(mock_boto3):
+    yield aws.AWSSQSConsumerBackend(priority=Priority.default)
+
+
+@pytest.fixture
+def mock_pubsub_v1():
+    with mock.patch("taskhawk.backends.gcp.pubsub_v1", autospec=True) as pubsub_v1_mock:
+        pubsub_v1_mock.SubscriberClient.subscription_path = pubsub_v1.SubscriberClient.subscription_path
+        pubsub_v1_mock.PublisherClient.topic_path = pubsub_v1.PublisherClient.topic_path
+        yield pubsub_v1_mock
+
+
+@pytest.fixture(
+    params=["taskhawk.backends.aws.AWSSQSConsumerBackend", "taskhawk.backends.gcp.GooglePubSubConsumerBackend"]
+)
+def consumer_backend(request, mock_boto3):
+    with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
+        yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
+
+
+@pytest.fixture(
+    params=["taskhawk.backends.aws.AWSSNSConsumerBackend", "taskhawk.backends.gcp.GooglePubSubPublisherBackend"]
+)
+def publisher_backend(request, mock_boto3):
+    with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
+        yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
+
+
+@pytest.fixture()
+def mock_publisher_backend():
+    with mock.patch.object(TaskhawkPublisherBaseBackend, '_publish'):
+        yield TaskhawkPublisherBaseBackend()

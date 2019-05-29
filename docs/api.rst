@@ -1,6 +1,9 @@
 API reference
 =============
 
+.. module:: taskhawk.conf
+.. autofunction:: configure_with_object
+
 .. module:: taskhawk
 
 .. autofunction:: listen_for_messages
@@ -11,13 +14,15 @@ API reference
 .. autoclass:: Task
    :members: with_priority, with_headers, dispatch
 
+.. autoclass:: Metadata
+   :members: extend_visibility_timeout
+
 .. autoclass:: Priority
    :members:
    :undoc-members:
    :member-order: bysource
 
 .. autofunction:: requeue_dead_letter
-.. autofunction:: extend_visibility_timeout
 
 Exceptions
 ++++++++++

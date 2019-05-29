@@ -2,9 +2,9 @@ import copy
 import inspect
 import typing
 
-from taskhawk import Message, Priority
 from taskhawk.conf import settings
 from taskhawk.exceptions import ConfigurationError, TaskNotFound
+from taskhawk.models import Metadata, Message, Priority
 from taskhawk.publisher import publish
 
 
@@ -86,15 +86,12 @@ class AsyncInvocation:
         """
         message = Message.new(
             self._task.name,
+            self._priority or self._task.priority,
             copy.deepcopy(args),
             copy.deepcopy(kwargs),
-            headers={**settings.TASKHAWK_DEFAULT_HEADERS(), **self._headers},
+            headers={**settings.TASKHAWK_DEFAULT_HEADERS(task=self._task), **self._headers},
         )
-        message.priority = self._priority or self._task.priority
-        if settings.TASKHAWK_SYNC:
-            message.call_task(None)
-        else:
-            publish(message)
+        publish(message)
 
 
 class Task:
@@ -136,8 +133,8 @@ class Task:
                 # disallow use of *args
                 raise ConfigurationError("Use of *args is not allowed")
             elif p.name == 'metadata':
-                if p.annotation is not inspect.Signature.empty and p.annotation is not dict:
-                    raise ConfigurationError("Signature for 'metadata' param must be dict")
+                if p.annotation is not inspect.Signature.empty and p.annotation is not Metadata:
+                    raise ConfigurationError(f"Signature for 'metadata' param must be Metadata, not {p.annotation}")
                 self._accepts_metadata = True
             elif p.name == 'headers':
                 if p.annotation is not inspect.Signature.empty and p.annotation is not dict:
@@ -206,22 +203,15 @@ class Task:
         """
         AsyncInvocation(self).dispatch(*args, **kwargs)
 
-    def call(self, message: 'Message', receipt: typing.Optional[str]) -> None:
+    def call(self, message: 'Message') -> None:
         """
         Calls the task with this message
         :param message: The message
-        :param receipt: SQS receipt. May be `None` for Lambda consumers.
         """
         args = copy.deepcopy(message.args)
         kwargs = copy.deepcopy(message.kwargs)
         if self.accepts_metadata:
-            kwargs['metadata'] = {
-                'id': message.id,
-                'timestamp': message.timestamp,
-                'version': message.version,
-                'receipt': receipt,
-                'priority': message.priority,
-            }
+            kwargs['metadata'] = message.metadata
         if self.accepts_headers:
             kwargs['headers'] = copy.deepcopy(message.headers)
         self.fn(*args, **kwargs)

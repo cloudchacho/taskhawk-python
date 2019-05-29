@@ -17,16 +17,19 @@ Optionally, pass in ``priority=taskhawk.Priority.high`` to mark the task as a hi
 Task name is automatically inferred from decorated function module and name, but you can also set it
 explicitly with ``name`` parameter.
 
-If your task function accepts an kwarg called ``metadata`` (of type ``dict``) or ``**kwargs``, the function will be
-called with a ``metadata`` parameter as a dict with the following attributes:
+If your task function accepts an kwarg called ``metadata`` (of type ``taskhawk.Metadata``) or ``**kwargs``, the
+function will be called with a ``metadata`` parameter with the following attributes:
+
+**headers**: task headers that it was dispatched with. This is an arbitrary dict which may be used to pass, as an
+example, request id.
 
 **id**: task identifier. This represents a run of a task.
 
+**platform_metadata**: Platform specific metadata, for example SQS receipt or PubSub ack id. This may be used to
+extend message visibility if the task is running longer than expected using ``taskhawk.extend_visibility_timeout``.
+
 **priority**: the priority a task was dispatched with. This will be same as task's priority, unless priority was
 customized on dispatch.
-
-**receipt**: SQS receipt for the task. This may be used to extend message visibility if the task is running longer
-than expected using ``taskhawk.extend_visibility_timeout``.
 
 **timestamp**: task dispatch epoch timestamp (milliseconds)
 
@@ -57,7 +60,7 @@ chaining like so:
 Consumer
 ++++++++
 
-A consumer for SQS based workers can be started as following:
+A consumer for AWS SQS/Google PubSub based workers can be started as following:
 
 .. code:: python
 
@@ -96,7 +99,7 @@ Internally, all tasks are converted into a message that looks like this:
             "version": "1.0"
         },
         "headers": {
-            ...
+            "request_id": "95df01b4-ee98-5cb9-9903-4c221d41eb5e"
         },
         "task": "tasks.send_email",
         "args": [
