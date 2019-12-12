@@ -1,6 +1,7 @@
 import json
 import logging
 import typing
+from concurrent.futures import Future
 from unittest import mock
 
 import boto3
@@ -8,7 +9,10 @@ import funcy
 from botocore.config import Config
 from retrying import retry
 
-from taskhawk.backends.base import TaskhawkConsumerBaseBackend, TaskhawkPublisherBaseBackend
+from taskhawk.backends.base import (
+    TaskhawkConsumerBaseBackend,
+    TaskhawkPublisherBaseBackend,
+)
 from taskhawk.backends.exceptions import PartialFailure
 from taskhawk.conf import settings
 from taskhawk.models import Message, Priority
@@ -83,7 +87,9 @@ class AWSSNSPublisherBackend(TaskhawkPublisherBaseBackend):
         sqs_message.receipt_handle = 'test-receipt'
         return sqs_message
 
-    def _publish(self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None) -> str:
+    def _publish(
+        self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None,
+    ) -> typing.Union[str, Future]:
         return self._publish_over_sns(self.topic_name, payload, headers or {})
 
 

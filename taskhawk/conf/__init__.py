@@ -36,6 +36,7 @@ _DEFAULTS = {
     'TASKHAWK_PRE_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_POST_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_PUBLISHER_BACKEND': None,
+    'TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS': (),
     'TASKHAWK_QUEUE': None,
     'TASKHAWK_SYNC': False,
     'TASKHAWK_TASK_CLASS': 'taskhawk.task_manager.Task',

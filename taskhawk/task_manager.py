@@ -1,6 +1,7 @@
 import copy
 import inspect
 import typing
+from concurrent.futures import Future
 
 from taskhawk.conf import settings
 from taskhawk.exceptions import ConfigurationError, TaskNotFound
@@ -78,11 +79,13 @@ class AsyncInvocation:
         self._priority = priority
         return self
 
-    def dispatch(self, *args, **kwargs) -> None:
+    def dispatch(self, *args, **kwargs) -> typing.Union[str, Future]:
         """
         Dispatch task for async execution
         :param args: arguments to pass to the task
         :param kwargs: keyword args to pass to the task
+        :returns: for async publishers, returns a future that represents the publish api call, otherwise, returns
+        the published message id
         """
         message = Message.new(
             self._task.name,
@@ -91,7 +94,7 @@ class AsyncInvocation:
             copy.deepcopy(kwargs),
             headers={**settings.TASKHAWK_DEFAULT_HEADERS(task=self._task), **self._headers},
         )
-        publish(message)
+        return publish(message)
 
 
 class Task:

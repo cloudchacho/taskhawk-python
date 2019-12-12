@@ -165,6 +165,12 @@ Taskhawk publisher backend class
 
 required; string
 
+**TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS**
+
+Batching configuration for the ``GooglePubSubAsyncPublisherBackend`` publisher.
+
+See `Google PubSub Docs`_ for more information.
+
 **TASKHAWK_QUEUE**
 
 The name of the taskhawk queue (exclude the ``TASKHAWK-`` prefix).
@@ -187,4 +193,4 @@ optional; fully-qualified class name
 
 
 .. _lambda_sns_format: https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
-
+.. _Google PubSub Docs: https://google-cloud.readthedocs.io/en/latest/pubsub/types.html#google.cloud.pubsub_v1.types.BatchSettings

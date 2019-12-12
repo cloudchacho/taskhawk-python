@@ -2,14 +2,18 @@ import json
 import logging
 import typing
 from collections import Counter
+from typing import cast
 
 import mock
 from google.api_core.exceptions import DeadlineExceeded
 from google.cloud import pubsub_v1
+from google.cloud.pubsub_v1.futures import Future
 from google.cloud.pubsub_v1.proto.pubsub_pb2 import ReceivedMessage
-from retrying import retry
 
-from taskhawk.backends.base import TaskhawkPublisherBaseBackend, TaskhawkConsumerBaseBackend
+from taskhawk.backends.base import (
+    TaskhawkPublisherBaseBackend,
+    TaskhawkConsumerBaseBackend,
+)
 from taskhawk.backends.import_utils import import_class
 from taskhawk.conf import settings
 from taskhawk.models import Message, Priority
@@ -55,19 +59,26 @@ def get_priority_suffix(priority: Priority) -> str:
     return ''
 
 
-class GooglePubSubPublisherBackend(TaskhawkPublisherBaseBackend):
+class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
     def __init__(self, priority: Priority) -> None:
-        self.publisher = pubsub_v1.PublisherClient.from_service_account_file(settings.GOOGLE_APPLICATION_CREDENTIALS)
+        self.publisher = pubsub_v1.PublisherClient.from_service_account_file(
+            settings.GOOGLE_APPLICATION_CREDENTIALS, batch_settings=settings.TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS,
+        )
         self._topic_path = pubsub_v1.PublisherClient.topic_path(
             settings.GOOGLE_PUBSUB_PROJECT_ID,
             f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
         )
 
-    @retry(stop_max_attempt_number=3, stop_max_delay=3000)
-    def publish_to_topic(self, topic_path: str, data: bytes, attrs: typing.Optional[dict] = None) -> str:
+    def publish_to_topic(
+        self, topic_path: str, data: bytes, attrs: typing.Optional[typing.Mapping] = None
+    ) -> typing.Union[str, Future]:
+        """
+        Publishes to a Google Pub/Sub topic and returns a future that represents the publish API call. These API calls
+        are batched for better performance.
+        """
         attrs = attrs or {}
         attrs = dict((str(key), str(value)) for key, value in attrs.items())
-        return self.publisher.publish(topic_path, data=data, **attrs).result()
+        return self.publisher.publish(topic_path, data=data, **attrs)
 
     def _mock_queue_message(self, message: Message) -> mock.Mock:
         gcp_message = mock.Mock()
@@ -76,8 +87,15 @@ class GooglePubSubPublisherBackend(TaskhawkPublisherBaseBackend):
         gcp_message.ack_id = 'test-receipt'
         return gcp_message
 
-    def _publish(self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None) -> str:
-        return self.publish_to_topic(self._topic_path, payload.encode('utf8'), headers)
+    def _publish(self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None,) -> str:
+        return self.publish_to_topic(self._topic_path, payload.encode("utf8"), headers)
+
+
+class GooglePubSubPublisherBackend(GooglePubSubAsyncPublisherBackend):
+    def publish_to_topic(
+        self, topic_path: str, data: bytes, attrs: typing.Optional[typing.Mapping] = None
+    ) -> typing.Union[str, Future]:
+        return cast(Future, super().publish_to_topic(topic_path, data, attrs)).result()
 
 
 class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
@@ -100,7 +118,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
         try:
             received_messages = self.subscriber.pull(
-                self._subscription_path, num_messages, retry=None, timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S
+                self._subscription_path, num_messages, retry=None, timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             ).received_messages
             return received_messages
         except DeadlineExceeded:
@@ -109,7 +127,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
 
     def process_message(self, queue_message: ReceivedMessage) -> None:
         try:
-            self.message_handler(queue_message.message.data.decode(), GoogleMetadata(queue_message.ack_id))
+            self.message_handler(
+                queue_message.message.data.decode(), GoogleMetadata(queue_message.ack_id),
+            )
         except Exception:
             if self._can_reprocess_message(queue_message):
                 raise

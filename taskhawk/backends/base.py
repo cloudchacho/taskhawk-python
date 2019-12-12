@@ -1,3 +1,4 @@
+from concurrent.futures import Future
 import json
 import logging
 import typing
@@ -7,7 +8,12 @@ from unittest import mock
 
 from taskhawk.backends.import_utils import import_class
 from taskhawk.conf import settings
-from taskhawk.exceptions import ValidationError, IgnoreException, LoggingException, RetryException
+from taskhawk.exceptions import (
+    ValidationError,
+    IgnoreException,
+    LoggingException,
+    RetryException,
+)
 from taskhawk.models import Message
 
 
@@ -42,23 +48,25 @@ class TaskhawkPublisherBaseBackend(TaskhawkBaseBackend):
     def _mock_queue_message(self, message: Message) -> mock.Mock:
         return NotImplementedError
 
-    def _publish(self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None) -> str:
+    def _publish(
+        self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None,
+    ) -> typing.Union[str, Future]:
         raise NotImplementedError
 
-    def publish(self, message: Message) -> str:
+    def publish(self, message: Message) -> typing.Union[str, Future]:
         if settings.TASKHAWK_SYNC:
             self._dispatch_sync(message)
             return str(uuid.uuid4())
 
         message_body = message.as_dict()
-        headers = {**message_body['headers']}
+        headers = {**message_body["headers"]}
         payload = self.message_payload(message_body)
 
-        message_id = self._publish(message, payload, headers)
+        result = self._publish(message, payload, headers)
 
-        log_published_message(message_body, message_id)
+        log_published_message(message_body, result)
 
-        return message_id
+        return result
 
 
 class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
@@ -165,8 +173,14 @@ def _decimal_json_default(obj):
     raise TypeError
 
 
-def log_published_message(message_body: dict, message_id: str) -> None:
-    logger.debug('Sent message', extra={'message_body': message_body, 'message_id': message_id})
+def log_published_message(message_body: dict, result: typing.Union[str, Future]) -> None:
+    def _log(message_id: str):
+        logger.debug('Sent message', extra={'message_body': message_body, 'message_id': message_id})
+
+    if isinstance(result, Future):
+        result.add_done_callback(lambda f: _log(f.result()))
+    else:
+        _log(result)
 
 
 def _log_received_message(message_body: dict) -> None:

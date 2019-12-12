@@ -59,6 +59,18 @@ class TestPubSubPublisher:
             gcp_publisher._topic_path, data=message_data.encode(), **message.headers
         )
 
+    def test_async_publish_success(self, mock_pubsub_v1, message, gcp_settings):
+        gcp_publisher = gcp.GooglePubSubAsyncPublisherBackend(priority=message.priority)
+        message_data = json.dumps(message.as_dict())
+
+        future = gcp_publisher.publish(message)
+
+        assert future == gcp_publisher.publisher.publish.return_value
+
+        gcp_publisher.publisher.publish.assert_called_once_with(
+            gcp_publisher._topic_path, data=message_data.encode(), **message.headers
+        )
+
     @mock.patch('tests.tasks._send_email', autospec=True)
     def test_sync_mode(self, mock_send_email, mock_pubsub_v1, message, gcp_settings):
         gcp_settings.TASKHAWK_SYNC = True

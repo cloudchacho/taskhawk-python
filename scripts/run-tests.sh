@@ -15,9 +15,9 @@ options="${target} ${options}"
 
 mypy taskhawk
 
-python3 -m pytest ${options}
+python3 -m pytest -p no:taskhawk ${options}
 
-black --skip-string-normalization --line-length=120 --check .
+black --check .
 
 flake8
 

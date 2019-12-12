@@ -66,7 +66,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['funcy', 'retrying', 'arrow'],
+    install_requires=['funcy', 'arrow'],
     tests_require=tests_require,
     setup_requires=['pytest-runner'],
     # List additional groups of dependencies here (e.g. development
@@ -74,7 +74,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'aws': ['boto3'],
+        'aws': ['boto3', 'retrying'],
         'gcp': ['google-cloud-pubsub', 'redis'],
         'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools'],
         'test': tests_require,

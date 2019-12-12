@@ -65,6 +65,7 @@ In case of GCP, additional required settings are:
     TASKHAWK_CONSUMER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubConsumerBackend'
     TASKHAWK_PUBLISHER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubPublisherBackend'
 
+For batch publish, use ``taskhawk.backends.gcp.GooglePubSubAsyncPublisherBackend``
 
 Provisioning
 ------------

@@ -1,3 +1,11 @@
+[build-system]
+requires = [
+    "setuptools >= 40.0.4",
+    "setuptools_scm >= 2.0.0, <4",
+    "wheel >= 0.29.0",
+]
+build-backend="setuptools.build_meta"
+
 [tool.black]
 exclude = '''
 (
@@ -14,3 +22,6 @@ exclude = '''
   | _pb2\.py
 )
 '''
+target_version = ['py36', 'py37']
+line-length = 120
+skip-string-normalization = true
