@@ -1,8 +1,14 @@
 API reference
 =============
 
-.. module:: taskhawk.conf
-.. autofunction:: configure_with_object
+.. autodata:: taskhawk.conf.settings
+    :annotation:
+
+.. autofunction:: taskhawk.conf.settings.configure_with_object
+
+.. autofunction:: taskhawk.conf.settings.clear_cache
+
+.. attribute:: taskhawk.conf.settings.configured
 
 .. module:: taskhawk
 

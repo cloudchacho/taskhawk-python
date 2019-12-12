@@ -17,7 +17,7 @@ pip_compile:
 	./scripts/pip-compile.sh
 
 release_setup: clean
-	git clean -ffdx
+	git clean -ffdx -e .idea
 
 release: release_setup
 	./scripts/release.sh
