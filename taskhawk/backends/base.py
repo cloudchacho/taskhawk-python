@@ -26,7 +26,7 @@ class TaskhawkBaseBackend:
 
     @staticmethod
     def message_payload(data: dict) -> str:
-        return json.dumps(data, default=_decimal_json_default)
+        return json.dumps(data, default=_decimal_json_default, allow_nan=False)
 
 
 class TaskhawkPublisherBaseBackend(TaskhawkBaseBackend):

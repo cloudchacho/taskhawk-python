@@ -1,4 +1,5 @@
 import json
+import math
 from decimal import Decimal
 from unittest import mock
 
@@ -178,6 +179,15 @@ def test__convert_to_json_decimal(value, message_data):
     message_data['args'][0] = Decimal(value)
     message = Message(message_data)
     assert json.loads(backend.message_payload(message.as_dict()))['args'][0] == float(message.args[0])
+
+
+@pytest.mark.parametrize('value', [math.nan, math.inf, -math.inf])
+def test__convert_to_json_disallow_nan(value, message_data):
+    backend = TaskhawkBaseBackend()
+    message_data['args'][0] = value
+    message = Message(message_data)
+    with pytest.raises(ValueError):
+        backend.message_payload(message.as_dict())
 
 
 def test__convert_to_json_non_serializable(message_data):

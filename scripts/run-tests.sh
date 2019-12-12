@@ -15,7 +15,7 @@ options="${target} ${options}"
 
 mypy taskhawk
 
-python3 -bb -m pytest ${options}
+python3 -m pytest ${options}
 
 black --skip-string-normalization --line-length=120 --check .
 
