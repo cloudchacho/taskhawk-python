@@ -102,7 +102,10 @@ class TestSQSConsumer:
         sqs_publisher = aws.AWSSQSConsumerBackend(priority=priority)
         assert sqs_publisher.queue_name == queue
 
-    def test_initialization(self, mock_boto3, consumer):
+    def test_client_and_resource_instantiation(self, mock_boto3, consumer):
+        # make sure client and resource are initialized
+        consumer.sqs_client
+        consumer.sqs_resource
         mock_boto3.resource.assert_called_once_with(
             'sqs',
             region_name=settings.AWS_REGION,

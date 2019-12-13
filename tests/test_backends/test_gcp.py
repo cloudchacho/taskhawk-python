@@ -122,7 +122,7 @@ class TestGCPConsumer:
     def test_constructor(self, mock_pubsub_v1, gcp_settings):
         gcp_consumer = gcp.GooglePubSubConsumerBackend(priority=Priority.default)
         assert gcp_consumer.subscriber == mock_pubsub_v1.SubscriberClient()
-        assert gcp_consumer._publisher == mock_pubsub_v1.PublisherClient()
+        assert gcp_consumer.publisher == mock_pubsub_v1.PublisherClient()
 
     @staticmethod
     def _build_gcp_queue_message(message):
@@ -233,4 +233,4 @@ class TestGCPConsumer:
 
         gcp_consumer.fetch_and_process_messages()
 
-        gcp_consumer._publisher.publish.assert_not_called()
+        gcp_consumer.publisher.publish.assert_not_called()

@@ -54,6 +54,13 @@ def _auto_discover_project() -> None:
         setattr(settings, 'GOOGLE_CLOUD_PROJECT', project)
 
 
+def get_google_cloud_project() -> str:
+    if not settings.GOOGLE_CLOUD_PROJECT:
+        with _seed_credentials():
+            _auto_discover_project()
+    return settings.GOOGLE_CLOUD_PROJECT
+
+
 # TODO move to dataclasses in py3.7
 class GoogleMetadata:
     def __init__(self, ack_id):
@@ -93,12 +100,17 @@ def get_priority_suffix(priority: Priority) -> str:
 
 class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
     def __init__(self, priority: Priority) -> None:
-        with _seed_credentials():
-            self.publisher = pubsub_v1.PublisherClient(batch_settings=settings.TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS,)
-            _auto_discover_project()
+        self._publisher = None
         self._topic_path = pubsub_v1.PublisherClient.topic_path(
-            settings.GOOGLE_CLOUD_PROJECT, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
+            get_google_cloud_project(), f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
         )
+
+    @property
+    def publisher(self):
+        if self._publisher is None:
+            with _seed_credentials():
+                self._publisher = pubsub_v1.PublisherClient()
+        return self._publisher
 
     def publish_to_topic(
         self, topic_path: str, data: bytes, attrs: typing.Optional[typing.Mapping] = None
@@ -131,23 +143,34 @@ class GooglePubSubPublisherBackend(GooglePubSubAsyncPublisherBackend):
 
 class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def __init__(self, priority: Priority, dlq=False) -> None:
-        with _seed_credentials():
-            self.subscriber = pubsub_v1.SubscriberClient()
-            self._publisher = pubsub_v1.PublisherClient()
-            _auto_discover_project()
-
+        self._publisher = None
+        self._subscriber = None
         self.message_retry_state: typing.Optional[MessageRetryStateBackend] = None
+        cloud_project = get_google_cloud_project()
         self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
-            settings.GOOGLE_CLOUD_PROJECT,
+            cloud_project,
             f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}{"-dlq" if dlq else ""}',
         )
         self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
-            settings.GOOGLE_CLOUD_PROJECT,
-            f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
+            cloud_project, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
         )
         if settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND:
             message_retry_state_cls = import_class(settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND)
             self.message_retry_state = message_retry_state_cls()
+
+    @property
+    def publisher(self):
+        if self._publisher is None:
+            with _seed_credentials():
+                self._publisher = pubsub_v1.PublisherClient()
+        return self._publisher
+
+    @property
+    def subscriber(self):
+        if self._subscriber is None:
+            with _seed_credentials():
+                self._subscriber = pubsub_v1.SubscriberClient()
+        return self._subscriber
 
     def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
         try:
@@ -210,7 +233,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                             self._subscription_path, [queue_message.ack_id], visibility_timeout
                         )
 
-                    self._publisher.publish(topic_path, data=queue_message.message.data, **queue_message.attributes)
+                    self.publisher.publish(topic_path, data=queue_message.message.data, **queue_message.attributes)
                     logger.debug(
                         'Re-queued message from DLQ {} to {}'.format(self._subscription_path, topic_path),
                         extra={'message_id': queue_message.message_id},
@@ -236,7 +259,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         return False
 
     def _move_message_to_dlq(self, queue_message: ReceivedMessage) -> None:
-        self._publisher.publish(self._dlq_topic_path, queue_message.message.data, **queue_message.attributes)
+        self.publisher.publish(self._dlq_topic_path, queue_message.message.data, **queue_message.attributes)
         logger.debug('Sent message to DLQ', extra={'message_id': queue_message.message_id})
 
 
