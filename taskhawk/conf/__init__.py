@@ -102,7 +102,8 @@ class _LazySettings(object):
 
     def configure_with_object(self, obj: object) -> None:
         """
-        Set Taskhawk config using a dataclass-like object that contains all settings as it's attributes.
+        Set Taskhawk config using a dataclass-like object that contains all settings as its attributes, or a dict that
+        contains settings as its keys.
         """
         assert not self._user_settings, "settings have already been configured"
 
@@ -127,6 +128,24 @@ class _LazySettings(object):
         except AttributeError as err:
             raise ImportError(f"Module '{module_path}' does not define a '{class_name}' attribute/class") from err
 
+    def _get_setting_from_object(self, attr: str):
+        if isinstance(self._user_settings, dict):
+            if attr in self._user_settings:
+                return self._user_settings[attr]
+            elif attr.lower() in self._user_settings:
+                return self._user_settings[attr.lower()]
+            raise RuntimeError
+        else:
+            try:
+                # Check if present in user settings
+                return getattr(self._user_settings, attr)
+            except AttributeError:
+                # try lowercase
+                try:
+                    return getattr(self._user_settings, attr.lower())
+                except AttributeError:
+                    raise RuntimeError
+
     def __getattr__(self, attr):
         self._ensure_configured()
 
@@ -134,15 +153,10 @@ class _LazySettings(object):
             raise AttributeError("Invalid API setting: '%s'" % attr)
 
         try:
-            # Check if present in user settings
-            val = getattr(self._user_settings, attr)
-        except AttributeError:
-            # try lowercase
-            try:
-                val = getattr(self._user_settings, attr.lower())
-            except AttributeError:
-                # Fall back to defaults
-                val = self._defaults[attr]
+            val = self._get_setting_from_object(attr)
+        except RuntimeError:
+            # Fall back to defaults
+            val = self._defaults[attr]
 
         # Coerce import strings into classes
         if attr in self._import_strings:
@@ -176,7 +190,7 @@ This object allows settings to be accessed as properties. Settings can be config
 
 #. Environment variable named ``SETTINGS_MODULE`` that points to a python module with settings as module attributes
 #. Django - if Django can be imported, Django settings will be used automatically
-#. Using an object, by calling :meth:`taskhawk.conf.settings.configure_with_object`
+#. Using an object or dict, by calling :meth:`taskhawk.conf.settings.configure_with_object`
 
 Some setting values need to be string import paths will be automatically resolved and return the class.
 
@@ -186,6 +200,7 @@ Once settings have been configured, they can't be changed.
 
 def configure_with_object(config: object) -> None:
     """
-    Set Taskhawk config using a dataclass-like object that contains all settings as it's attributes.
+    Set Taskhawk config using a dataclass-like object that contains all settings as its attributes, or a dict that
+    contains settings as its keys.
     """
     settings.configure_with_object(config)
