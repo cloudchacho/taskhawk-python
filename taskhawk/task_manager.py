@@ -33,7 +33,7 @@ def task(*args, priority: Priority = Priority.default, name: typing.Optional[str
             func = existing_task.fn
             raise ConfigurationError(f'Task named "{task_name}" already exists: {func.__module__}.{func.__name__}')
 
-        fn.task = settings.TASKHAWK_TASK_CLASS(fn, priority, task_name)
+        fn.task = Task(fn, priority, task_name)
         fn.dispatch = fn.task.dispatch
         fn.with_headers = fn.task.with_headers
         fn.with_priority = fn.task.with_priority
@@ -135,11 +135,11 @@ class Task:
             elif p.kind == inspect.Parameter.VAR_POSITIONAL:
                 # disallow use of *args
                 raise ConfigurationError("Use of *args is not allowed")
-            elif p.name == 'metadata':
+            elif p.name == "metadata":
                 if p.annotation is not inspect.Signature.empty and p.annotation is not Metadata:
                     raise ConfigurationError(f"Signature for 'metadata' param must be Metadata, not {p.annotation}")
                 self._accepts_metadata = True
-            elif p.name == 'headers':
+            elif p.name == "headers":
                 if p.annotation is not inspect.Signature.empty and p.annotation is not dict:
                     raise ConfigurationError("Signature for 'headers' param must be dict")
                 self._accepts_headers = True
@@ -206,7 +206,7 @@ class Task:
         """
         AsyncInvocation(self).dispatch(*args, **kwargs)
 
-    def call(self, message: 'Message') -> None:
+    def call(self, message: "Message") -> None:
         """
         Calls the task with this message
         :param message: The message
@@ -214,16 +214,16 @@ class Task:
         args = copy.deepcopy(message.args)
         kwargs = copy.deepcopy(message.kwargs)
         if self.accepts_metadata:
-            kwargs['metadata'] = message.metadata
+            kwargs["metadata"] = message.metadata
         if self.accepts_headers:
-            kwargs['headers'] = copy.deepcopy(message.headers)
+            kwargs["headers"] = copy.deepcopy(message.headers)
         self.fn(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f'Taskhawk task: {self.name}'
+        return f"Taskhawk task: {self.name}"
 
     @classmethod
-    def find_by_name(cls, name: str) -> 'Task':
+    def find_by_name(cls, name: str) -> "Task":
         """
         Finds a task by name
         :param name: task name (including module)
