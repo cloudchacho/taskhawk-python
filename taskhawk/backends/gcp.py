@@ -2,10 +2,12 @@ import json
 import logging
 import typing
 from collections import Counter
-from typing import cast
+from contextlib import contextmanager, ExitStack
+from typing import cast, Generator
 
 import mock
 from google.api_core.exceptions import DeadlineExceeded
+from google.auth import environment_vars as google_env_vars, default as google_auth_default
 from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.futures import Future
 from google.cloud.pubsub_v1.proto.pubsub_pb2 import ReceivedMessage
@@ -15,11 +17,40 @@ from taskhawk.backends.base import (
     TaskhawkConsumerBaseBackend,
 )
 from taskhawk.backends.import_utils import import_class
+from taskhawk.backends.utils import override_env
 from taskhawk.conf import settings
 from taskhawk.models import Message, Priority
 
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def _seed_credentials() -> Generator[None, None, None]:
+    """
+    Seed environment with explicitly set credentials. Normally we'd stay away from mucking with environment vars,
+    however the logic to decode `GOOGLE_APPLICATION_CREDENTIALS` isn't simple, so we let Google libraries handle it.
+    """
+    with ExitStack() as stack:
+        if settings.GOOGLE_APPLICATION_CREDENTIALS:
+            stack.enter_context(override_env(google_env_vars.CREDENTIALS, settings.GOOGLE_APPLICATION_CREDENTIALS))
+
+        if settings.GOOGLE_CLOUD_PROJECT:
+            stack.enter_context(override_env(google_env_vars.PROJECT, settings.GOOGLE_CLOUD_PROJECT))
+
+        yield
+
+
+def _auto_discover_project() -> None:
+    """
+    Auto discover Google project id from credentials. If project id is explicitly set, just use that.
+    """
+    if not settings.GOOGLE_CLOUD_PROJECT:
+        # discover project from credentials
+        # there's no way to get this from the Client objects, so we reload the credentials
+        _, project = google_auth_default()
+        assert project, "couldn't discover project"
+        setattr(settings, 'GOOGLE_CLOUD_PROJECT', project)
 
 
 # TODO move to dataclasses in py3.7
@@ -61,12 +92,11 @@ def get_priority_suffix(priority: Priority) -> str:
 
 class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
     def __init__(self, priority: Priority) -> None:
-        self.publisher = pubsub_v1.PublisherClient.from_service_account_file(
-            settings.GOOGLE_APPLICATION_CREDENTIALS, batch_settings=settings.TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS,
-        )
+        with _seed_credentials():
+            self.publisher = pubsub_v1.PublisherClient(batch_settings=settings.TASKHAWK_PUBLISHER_GCP_BATCH_SETTINGS,)
+            _auto_discover_project()
         self._topic_path = pubsub_v1.PublisherClient.topic_path(
-            settings.GOOGLE_PUBSUB_PROJECT_ID,
-            f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
+            settings.GOOGLE_CLOUD_PROJECT, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
         )
 
     def publish_to_topic(
@@ -100,15 +130,18 @@ class GooglePubSubPublisherBackend(GooglePubSubAsyncPublisherBackend):
 
 class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def __init__(self, priority: Priority, dlq=False) -> None:
-        self.subscriber = pubsub_v1.SubscriberClient.from_service_account_file(settings.GOOGLE_APPLICATION_CREDENTIALS)
-        self._publisher = pubsub_v1.PublisherClient.from_service_account_file(settings.GOOGLE_APPLICATION_CREDENTIALS)
+        with _seed_credentials():
+            self.subscriber = pubsub_v1.SubscriberClient()
+            self._publisher = pubsub_v1.PublisherClient()
+            _auto_discover_project()
+
         self.message_retry_state: typing.Optional[MessageRetryStateBackend] = None
         self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
-            settings.GOOGLE_PUBSUB_PROJECT_ID,
+            settings.GOOGLE_CLOUD_PROJECT,
             f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}{"-dlq" if dlq else ""}',
         )
         self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
-            settings.GOOGLE_PUBSUB_PROJECT_ID,
+            settings.GOOGLE_CLOUD_PROJECT,
             f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
         )
         if settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND:
@@ -172,7 +205,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             for queue_message in queue_messages:
                 try:
                     if visibility_timeout:
-                        self.subscriber.modify_ack_deadline([queue_message.ack_id], visibility_timeout)
+                        self.subscriber.modify_ack_deadline(
+                            self._subscription_path, [queue_message.ack_id], visibility_timeout
+                        )
 
                     self._publisher.publish(topic_path, data=queue_message.message.data, **queue_message.attributes)
                     logger.debug(

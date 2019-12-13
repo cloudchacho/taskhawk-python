@@ -15,7 +15,7 @@ def gcp_settings(settings):
     settings.GOOGLE_APPLICATION_CREDENTIALS = "DUMMY_GOOGLE_APPLICATION_CREDENTIALS"
     settings.TASKHAWK_PUBLISHER_BACKEND = "taskhawk.backends.gcp.GooglePubSubPublisherBackend"
     settings.TASKHAWK_CONSUMER_BACKEND = "taskhawk.backends.gcp.GooglePubSubConsumerBackend"
-    settings.GOOGLE_PUBSUB_PROJECT_ID = "DUMMY_PROJECT_ID"
+    settings.GOOGLE_CLOUD_PROJECT = "DUMMY_PROJECT_ID"
     settings.GOOGLE_PUBSUB_READ_TIMEOUT_S = 5
     settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND = 'taskhawk.backends.gcp.MessageRetryStateLocMem'
     settings.TASKHAWK_GOOGLE_MESSAGE_MAX_RETRIES = 5
@@ -45,9 +45,7 @@ class TestPubSubPublisher:
 
     def test_constructor(self, mock_pubsub_v1, gcp_settings):
         gcp_publisher = gcp.GooglePubSubPublisherBackend(priority=Priority.default)
-        assert gcp_publisher.publisher == mock_pubsub_v1.PublisherClient.from_service_account_file(
-            settings.GOOGLE_APPLICATION_CREDENTIALS
-        )
+        assert gcp_publisher.publisher == mock_pubsub_v1.PublisherClient()
 
     def test_publish_success(self, mock_pubsub_v1, message, gcp_settings):
         gcp_publisher = gcp.GooglePubSubPublisherBackend(priority=message.priority)
@@ -119,12 +117,8 @@ class TestGCPConsumer:
 
     def test_constructor(self, mock_pubsub_v1, gcp_settings):
         gcp_consumer = gcp.GooglePubSubConsumerBackend(priority=Priority.default)
-        assert gcp_consumer.subscriber == mock_pubsub_v1.SubscriberClient.from_service_account_file(
-            settings.GOOGLE_APPLICATION_CREDENTIALS
-        )
-        assert gcp_consumer._publisher == mock_pubsub_v1.PublisherClient.from_service_account_file(
-            settings.GOOGLE_APPLICATION_CREDENTIALS
-        )
+        assert gcp_consumer.subscriber == mock_pubsub_v1.SubscriberClient()
+        assert gcp_consumer._publisher == mock_pubsub_v1.PublisherClient()
 
     @staticmethod
     def _build_gcp_queue_message(message):
@@ -173,7 +167,9 @@ class TestGCPConsumer:
 
         gcp_consumer.requeue_dead_letter(num_messages=num_messages, visibility_timeout=visibility_timeout)
 
-        gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with([queue_message.ack_id], visibility_timeout)
+        gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with(
+            gcp_consumer._subscription_path, [queue_message.ack_id], visibility_timeout
+        )
         gcp_consumer.pull_messages.assert_has_calls(
             [
                 mock.call(num_messages=num_messages, visibility_timeout=visibility_timeout),

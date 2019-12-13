@@ -19,7 +19,7 @@ Taskhawk Library for Python
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
 
-TaskHawk is a replacement for celery that works on AWS SQS/SNS, while keeping things pretty simple and
+TaskHawk is a replacement for celery that works on AWS SQS/SNS and Google PubSub, while keeping things pretty simple and
 straightforward. Any unbound function can be converted into a TaskHawk task.
 
 Only Python 3.6+ is supported currently.
@@ -38,6 +38,14 @@ First, install the library:
 
 Next, set up a few configuration settings:
 
+Common required settings:
+
+.. code:: python
+
+    TASKHAWK_QUEUE = "DEV-MYAPP"
+
+When using AWS, additional required settings are:
+
 .. code:: python
 
     AWS_ACCESS_KEY = <YOUR AWS KEY>
@@ -45,7 +53,23 @@ Next, set up a few configuration settings:
     AWS_REGION = <YOUR AWS REGION>
     AWS_SECRET_KEY = <YOUR AWS SECRET KEY>
 
-    TASKHAWK_QUEUE = "DEV-MYAPP"
+    HEDWIG_CONSUMER_BACKEND = 'taskhawk.backends.aws.AWSSQSConsumerBackend'
+    HEDWIG_PUBLISHER_BACKEND = 'taskhawk.backends.aws.AWSSNSPublisherBackend'
+
+
+In case of GCP, additional required settings are:
+
+.. code:: python
+
+    TASKHAWK_CONSUMER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubConsumerBackend'
+    TASKHAWK_PUBLISHER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubPublisherBackend'
+
+
+If running outside Google Cloud (e.g. locally), set ``GOOGLE_APPLICATION_CREDENTIALS``.
+
+Within Google Cloud, these credentials and permissions are managed by Google using IAM.
+
+If the Pub/Sub resources lie in a different project, set ``GOOGLE_CLOUD_PROJECT`` to the project id.
 
 For Django projects, simple use `Django settings`_ to configure Taskhawk, for non-Django projects, you
 must declare an environment variable called ``SETTINGS_MODULE`` that points to a module

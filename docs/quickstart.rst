@@ -59,11 +59,14 @@ In case of GCP, additional required settings are:
 
 .. code:: python
 
-    GOOGLE_APPLICATION_CREDENTIALS = <PATH TO YOUR GOOGLE ACCOUNT CREDENTIALS JSON FILE>
-    GOOGLE_PUBSUB_PROJECT_ID = <YOUR GCP PROJECT ID>
-
     TASKHAWK_CONSUMER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubConsumerBackend'
     TASKHAWK_PUBLISHER_BACKEND = 'taskhawk.backends.gcp.GooglePubSubPublisherBackend'
+
+If running outside Google Cloud (e.g. locally), set ``GOOGLE_APPLICATION_CREDENTIALS``.
+
+Within Google Cloud, these credentials and permissions are managed by Google using IAM.
+
+If the Pub/Sub resources lie in a different project, set ``GOOGLE_CLOUD_PROJECT`` to the project id.
 
 For batch publish, use ``taskhawk.backends.gcp.GooglePubSubAsyncPublisherBackend``
 
