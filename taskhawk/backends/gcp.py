@@ -6,7 +6,7 @@ from contextlib import contextmanager, ExitStack
 from datetime import timedelta
 from typing import cast, Generator
 
-import mock
+from unittest import mock
 from google.api_core.exceptions import DeadlineExceeded
 from google.auth import environment_vars as google_env_vars, default as google_auth_default
 from google.cloud import pubsub_v1
