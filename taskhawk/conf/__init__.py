@@ -176,7 +176,7 @@ This object allows settings to be accessed as properties. Settings can be config
 
 #. Environment variable named ``SETTINGS_MODULE`` that points to a python module with settings as module attributes
 #. Django - if Django can be imported, Django settings will be used automatically
-#. Using an object, by calling :meth:`hedwig.conf.settings.configure_with_object`
+#. Using an object, by calling :meth:`taskhawk.conf.settings.configure_with_object`
 
 Some setting values need to be string import paths will be automatically resolved and return the class.
 

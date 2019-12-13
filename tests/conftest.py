@@ -1,19 +1,24 @@
 import logging
 import time
 import uuid
+from contextlib import contextmanager
 
 import mock
 import pytest
-from google.cloud import pubsub_v1
-from moto import mock_sqs, mock_sns
 
 # initialize tasks
 import tests.tasks  # noqa
 import taskhawk.conf
-from taskhawk.backends import aws
 from taskhawk.backends.base import TaskhawkBaseBackend, TaskhawkPublisherBaseBackend
 from taskhawk.backends.utils import get_publisher_backend, get_consumer_backend
 from taskhawk.models import Priority, Message
+
+
+try:
+    # may not be available
+    from moto import mock_sqs, mock_sns
+except ImportError:
+    pass
 
 
 def pytest_configure():
@@ -67,32 +72,63 @@ def message(message_data):
     return Message(message_data)
 
 
-@pytest.fixture
-def mock_boto3():
+@contextmanager
+def _mock_boto3():
     settings.AWS_REGION = 'us-west-1'
     with mock_sqs(), mock_sns(), mock.patch("taskhawk.backends.aws.boto3", autospec=True) as boto3_mock:
         yield boto3_mock
 
 
+@pytest.fixture
+def mock_boto3():
+    with _mock_boto3() as m:
+        yield m
+
+
 @pytest.fixture()
 def sqs_consumer_backend(mock_boto3):
+    # may not be available
+    from taskhawk.backends import aws
+
     yield aws.AWSSQSConsumerBackend(priority=Priority.default)
 
 
 @pytest.fixture
 def mock_pubsub_v1():
+    # may not be available
+    from google.cloud import pubsub_v1
+
     with mock.patch("taskhawk.backends.gcp.pubsub_v1", autospec=True) as pubsub_v1_mock:
         pubsub_v1_mock.SubscriberClient.subscription_path = pubsub_v1.SubscriberClient.subscription_path
         pubsub_v1_mock.PublisherClient.topic_path = pubsub_v1.PublisherClient.topic_path
         yield pubsub_v1_mock
 
 
-@pytest.fixture(
-    params=["taskhawk.backends.aws.AWSSQSConsumerBackend", "taskhawk.backends.gcp.GooglePubSubConsumerBackend"]
-)
-def consumer_backend(request, mock_boto3):
-    with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
-        yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
+@pytest.fixture(params=['aws', 'google'])
+def consumer_backend(request):
+    if request.param == 'aws':
+        try:
+            import taskhawk.backends.aws  # noqa
+
+            with _mock_boto3():
+                yield TaskhawkBaseBackend.build(
+                    "taskhawk.backends.aws.AWSSQSConsumerBackend", priority=Priority.default
+                )
+        except ImportError:
+            pytest.skip("AWS backend not importable")
+
+    if request.param == 'google':
+        try:
+            import taskhawk.backends.gcp  # noqa
+
+            with mock.patch("taskhawk.backends.gcp.pubsub_v1"), mock.patch(
+                "taskhawk.backends.gcp.google_auth_default", return_value=(None, "DUMMY")
+            ):
+                yield TaskhawkBaseBackend.build(
+                    "taskhawk.backends.gcp.GooglePubSubConsumerBackend", priority=Priority.default
+                )
+        except ImportError:
+            pytest.skip("Google backend not importable")
 
 
 @pytest.fixture(

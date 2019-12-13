@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 # https://github.com/travis-ci/travis-ci/issues/7940
 export BOTO_CONFIG=/dev/null

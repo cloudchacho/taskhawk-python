@@ -5,32 +5,36 @@ from unittest import mock
 
 import pytest
 
-from taskhawk.backends.base import TaskhawkBaseBackend
+from taskhawk.backends.base import TaskhawkBaseBackend, TaskhawkConsumerBaseBackend, TaskhawkPublisherBaseBackend
 from taskhawk.models import Message, ValidationError, Priority
 from taskhawk.exceptions import LoggingException, RetryException, IgnoreException
 from taskhawk.backends import base
-from taskhawk.backends.aws import AWSSQSConsumerBackend, AWSSNSPublisherBackend
 from taskhawk.backends.utils import get_consumer_backend, get_publisher_backend
 
 
+class MockBackend(TaskhawkConsumerBaseBackend, TaskhawkPublisherBaseBackend):
+    def __init__(self, priority: Priority):
+        self.priority = priority
+
+
 class TestBackends:
-    def test_success_get_consumer_backend(self, mock_boto3, settings):
-        settings.TASKHAWK_CONSUMER_BACKEND = "taskhawk.backends.aws.AWSSQSConsumerBackend"
+    def test_success_get_consumer_backend(self, settings):
+        settings.TASKHAWK_CONSUMER_BACKEND = "tests.test_backends.test_base.MockBackend"
 
         consumer_backend = get_consumer_backend(Priority.default)
 
-        assert isinstance(consumer_backend, AWSSQSConsumerBackend)
+        assert isinstance(consumer_backend, MockBackend)
 
-    def test_success_get_publisher_backend(self, mock_boto3, settings):
-        settings.TASKHAWK_PUBLISHER_BACKEND = "taskhawk.backends.aws.AWSSNSPublisherBackend"
+    def test_success_get_publisher_backend(self, settings):
+        settings.TASKHAWK_PUBLISHER_BACKEND = "tests.test_backends.test_base.MockBackend"
 
         publisher_backend = get_publisher_backend(Priority.default)
 
-        assert isinstance(publisher_backend, AWSSNSPublisherBackend)
+        assert isinstance(publisher_backend, MockBackend)
 
     @pytest.mark.parametrize("get_backend_fn", [get_publisher_backend, get_consumer_backend])
-    def test_failure(self, get_backend_fn, mock_boto3, settings):
-        settings.TASKHAWK_PUBLISHER_BACKEND = settings.TASKHAWK_CONSUMER_BACKEND = "taskhawk.backends.aws.Invalid"
+    def test_failure(self, get_backend_fn, settings):
+        settings.TASKHAWK_PUBLISHER_BACKEND = settings.TASKHAWK_CONSUMER_BACKEND = "taskhawk.backends.Invalid"
 
         with pytest.raises(ImportError):
             get_backend_fn()

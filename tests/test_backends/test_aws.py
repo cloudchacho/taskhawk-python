@@ -5,11 +5,15 @@ from unittest import mock
 import funcy
 import pytest
 
-from taskhawk.backends import aws
-from taskhawk.backends.aws import AWSMetadata
+try:
+    from taskhawk.backends.aws import AWSMetadata
+except ImportError:
+    pass
 from taskhawk.backends.exceptions import PartialFailure
 from taskhawk.conf import settings
 from taskhawk.models import Priority
+
+aws = pytest.importorskip('taskhawk.backends.aws')
 
 
 class TestSNSPublisher:

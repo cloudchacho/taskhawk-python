@@ -76,7 +76,7 @@ setup(
     extras_require={
         'aws': ['boto3', 'retrying'],
         'gcp': ['google-cloud-pubsub', 'redis'],
-        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools'],
+        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools', 'wheel'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },

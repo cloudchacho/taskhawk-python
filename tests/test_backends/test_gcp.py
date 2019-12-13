@@ -4,10 +4,14 @@ from unittest import mock
 import funcy
 import pytest
 
-from taskhawk.backends import gcp
-from taskhawk.backends.gcp import GoogleMetadata
+try:
+    from taskhawk.backends.gcp import GoogleMetadata
+except ImportError:
+    pass
 from taskhawk.conf import settings
 from taskhawk.models import Priority
+
+gcp = pytest.importorskip('taskhawk.backends.gcp')
 
 
 @pytest.fixture
