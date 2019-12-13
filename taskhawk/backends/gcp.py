@@ -146,14 +146,15 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self._publisher = None
         self._subscriber = None
         self.message_retry_state: typing.Optional[MessageRetryStateBackend] = None
-        cloud_project = get_google_cloud_project()
-        self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
-            cloud_project,
-            f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}{"-dlq" if dlq else ""}',
-        )
-        self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
-            cloud_project, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
-        )
+        if not settings.TASKHAWK_SYNC:
+            cloud_project = get_google_cloud_project()
+            self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
+                cloud_project,
+                f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}{"-dlq" if dlq else ""}',
+            )
+            self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
+                cloud_project, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
+            )
         if settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND:
             message_retry_state_cls = import_class(settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND)
             self.message_retry_state = message_retry_state_cls()
