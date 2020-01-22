@@ -101,9 +101,10 @@ def get_priority_suffix(priority: Priority) -> str:
 class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
     def __init__(self, priority: Priority) -> None:
         self._publisher = None
-        self._topic_path = pubsub_v1.PublisherClient.topic_path(
-            get_google_cloud_project(), f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
-        )
+        if not settings.TASKHAWK_SYNC:
+            self._topic_path = pubsub_v1.PublisherClient.topic_path(
+                get_google_cloud_project(), f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
+            )
 
     @property
     def publisher(self):
