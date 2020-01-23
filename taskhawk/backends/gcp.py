@@ -103,7 +103,8 @@ class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
         self._publisher = None
         if not settings.TASKHAWK_SYNC:
             self._topic_path = pubsub_v1.PublisherClient.topic_path(
-                get_google_cloud_project(), f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
+                get_google_cloud_project(),
+                f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}',
             )
 
     @property
@@ -235,7 +236,11 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                             self._subscription_path, [queue_message.ack_id], visibility_timeout
                         )
 
-                    self.publisher.publish(topic_path, data=queue_message.message.data, **queue_message.attributes)
+                    future = self.publisher.publish(
+                        topic_path, data=queue_message.message.data, **queue_message.message.attributes
+                    )
+                    # wait for success
+                    future.result()
                     logger.debug(
                         'Re-queued message from DLQ {} to {}'.format(self._subscription_path, topic_path),
                         extra={'message_id': queue_message.message_id},
@@ -261,7 +266,11 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         return False
 
     def _move_message_to_dlq(self, queue_message: ReceivedMessage) -> None:
-        self.publisher.publish(self._dlq_topic_path, queue_message.message.data, **queue_message.attributes)
+        future = self.publisher.publish(
+            self._dlq_topic_path, queue_message.message.data, **queue_message.message.attributes
+        )
+        # wait for success
+        future.result()
         logger.debug('Sent message to DLQ', extra={'message_id': queue_message.message_id})
 
 

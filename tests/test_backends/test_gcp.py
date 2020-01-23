@@ -129,7 +129,7 @@ class TestGCPConsumer:
         queue_message = mock.MagicMock()
         queue_message.ack_id = "dummy_ack_id"
         queue_message.message.data = json.dumps(message.as_dict()).encode()
-        queue_message.attributes = message.as_dict()['headers']
+        queue_message.message.attributes = message.as_dict()['headers']
         return queue_message
 
     def test_pull_messages(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
@@ -225,6 +225,7 @@ class TestGCPConsumer:
         gcp_consumer._publisher.publish.assert_called_once_with(
             gcp_consumer._dlq_topic_path, queue_message.message.data, **message.headers
         )
+        gcp_consumer._publisher.publish.return_value.result.assert_called_once_with()
 
     def test_message_not_moved_to_dlq(self, mock_pubsub_v1, gcp_settings, message, gcp_consumer):
         queue_message = self._build_gcp_queue_message(message)
