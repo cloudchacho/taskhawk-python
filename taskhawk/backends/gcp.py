@@ -243,7 +243,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                     future.result()
                     logger.debug(
                         'Re-queued message from DLQ {} to {}'.format(self._subscription_path, topic_path),
-                        extra={'message_id': queue_message.message_id},
+                        extra={'message_id': queue_message.message.message_id},
                     )
 
                     self.delete_message(queue_message)
@@ -271,7 +271,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         )
         # wait for success
         future.result()
-        logger.debug('Sent message to DLQ', extra={'message_id': queue_message.message_id})
+        logger.debug('Sent message to DLQ', extra={'message_id': queue_message.message.message_id})
 
 
 class MaxRetriesExceededError(Exception):
