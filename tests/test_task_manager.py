@@ -56,20 +56,6 @@ def test_task_decorator_priority():
     assert 'test_task_decorator_priority' in _ALL_TASKS
 
 
-class CustomTask(Task):
-    pass
-
-
-def test_task_decorator_custom_task_class(settings):
-    settings.TASKHAWK_TASK_CLASS = 'tests.test_task_manager.CustomTask'
-
-    @task(name='test_task_decorator_custom_task_class')
-    def f():
-        pass
-
-    assert isinstance(f.task, CustomTask)
-
-
 default_headers_hook = mock.MagicMock()
 
 
