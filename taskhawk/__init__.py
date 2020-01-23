@@ -7,7 +7,7 @@ taskhawk
 
 
 # semantic versioning (http://semver.org/)
-VERSION = '3.2.1-dev'
+VERSION = '3.2.1'
 
 
 from .models import Metadata, Priority  # noqa
