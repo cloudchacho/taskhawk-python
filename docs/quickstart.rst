@@ -27,10 +27,11 @@ The latest development version can always be found on Github_.
 Configuration
 -------------
 
-Before you can use Taskhawk, you need to set up a few settings. For Django projects,
-simple use `Django settings`_ to configure Taskhawk, for non-Django projects, you
-must declare an environment variable called ``SETTINGS_MODULE`` that points to a module
-where settings may be found.
+Before you can use Taskhawk, you need to set up a few settings. For Django projects, simple use `Django settings`_
+to configure Taskhawk. For Flask projects, use `Flask config`_. For other frameworks, you can either declare an
+environment variable called ``SETTINGS_MODULE`` that points to a module where settings may be found, or manually
+configure using ``taskhawk.conf.settings.configure_with_object``.
+
 
 There are 2 cloud platforms currently supported: AWS and Google Cloud Platform. Settings will defer depending on your
 platform.
@@ -117,4 +118,5 @@ For more details, see :class:`taskhawk.Priority`.
 
 .. _Github: https://github.com/Automatic/taskhawk-python
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
+.. _Flask config: https://flask.palletsprojects.com/en/1.1.x/config/
 .. _Taskhawk Terraform Generator: https://github.com/Automatic/taskhawk-terraform-generator

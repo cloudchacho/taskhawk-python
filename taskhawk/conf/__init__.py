@@ -13,6 +13,13 @@ try:
 except ImportError:
     HAVE_DJANGO = False
 
+try:
+    from flask import current_app
+
+    HAVE_FLASK = True
+except ImportError:
+    HAVE_FLASK = False
+
 
 _DEFAULTS = {
     'AWS_REGION': None,
@@ -97,6 +104,10 @@ class _LazySettings(object):
             # automatically import Django settings in Django projects
             logging.info('Configuring Taskhawk through django settings')
             self._user_settings = django_settings
+        elif HAVE_FLASK:
+            logging.info('Configuring Taskhawk through flask settings')
+            # automatically import Flask settings in Flask projects
+            self._user_settings = current_app.config
         if not self._user_settings:
             raise ImportError("Taskhawk settings have not been configured")
 
@@ -189,7 +200,11 @@ settings = _LazySettings()
 This object allows settings to be accessed as properties. Settings can be configured in one of three ways:
 
 #. Environment variable named ``SETTINGS_MODULE`` that points to a python module with settings as module attributes
+
 #. Django - if Django can be imported, Django settings will be used automatically
+
+#. Flask - if Flask can be imported, Flask current application's config will be used automatically
+
 #. Using an object or dict, by calling :meth:`taskhawk.conf.settings.configure_with_object`
 
 Some setting values need to be string import paths will be automatically resolved and return the class.

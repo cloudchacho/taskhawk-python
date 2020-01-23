@@ -53,8 +53,8 @@ When using AWS, additional required settings are:
     AWS_REGION = <YOUR AWS REGION>
     AWS_SECRET_KEY = <YOUR AWS SECRET KEY>
 
-    HEDWIG_CONSUMER_BACKEND = 'taskhawk.backends.aws.AWSSQSConsumerBackend'
-    HEDWIG_PUBLISHER_BACKEND = 'taskhawk.backends.aws.AWSSNSPublisherBackend'
+    TASKHAWK_CONSUMER_BACKEND = 'taskhawk.backends.aws.AWSSQSConsumerBackend'
+    TASKHAWK_PUBLISHER_BACKEND = 'taskhawk.backends.aws.AWSSNSPublisherBackend'
 
 
 In case of GCP, additional required settings are:
@@ -71,9 +71,9 @@ Within Google Cloud, these credentials and permissions are managed by Google usi
 
 If the Pub/Sub resources lie in a different project, set ``GOOGLE_CLOUD_PROJECT`` to the project id.
 
-For Django projects, simple use `Django settings`_ to configure Taskhawk, for non-Django projects, you
-must declare an environment variable called ``SETTINGS_MODULE`` that points to a module
-where settings may be found.
+For Django projects, simple use `Django settings`_ to configure Taskhawk. For Flask projects, use `Flask config`_.
+For other frameworks, you can either declare an environment variable called ``SETTINGS_MODULE`` that points to a
+module where settings may be found, or manually configure using ``taskhawk.conf.settings.configure_with_object``.
 
 Then, simply add the decorator ``taskhawk.task`` to your function:
 
@@ -138,3 +138,4 @@ We use GitHub issues for tracking bugs and feature requests.
 
 .. _Read the Docs: https://taskhawk.readthedocs.io/en/latest/
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
+.. _Flask config: https://flask.palletsprojects.com/en/1.1.x/config/
