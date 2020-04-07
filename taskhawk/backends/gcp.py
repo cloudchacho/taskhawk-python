@@ -1,9 +1,8 @@
 import json
 import logging
 import typing
-from collections import Counter
 from contextlib import contextmanager, ExitStack
-from datetime import timedelta
+from datetime import datetime
 from typing import cast, Generator
 
 from unittest import mock
@@ -17,7 +16,6 @@ from taskhawk.backends.base import (
     TaskhawkPublisherBaseBackend,
     TaskhawkConsumerBaseBackend,
 )
-from taskhawk.backends.import_utils import import_class
 from taskhawk.backends.utils import override_env
 from taskhawk.conf import settings
 from taskhawk.models import Message, Priority
@@ -63,17 +61,39 @@ def get_google_cloud_project() -> str:
 
 # TODO move to dataclasses in py3.7
 class GoogleMetadata:
-    def __init__(self, ack_id):
+    def __init__(self, ack_id: str, publish_time: datetime, delivery_attempt: int):
         self._ack_id = ack_id
+        self._publish_time: datetime = publish_time
+        self._delivery_attempt = delivery_attempt
 
     @property
-    def ack_id(self):
+    def ack_id(self) -> str:
+        """
+        The ID used to ack the message
+        """
         return self._ack_id
+
+    @property
+    def publish_time(self) -> datetime:
+        """
+        Time this message was originally published to Pub/Sub
+        """
+        return self._publish_time
+
+    @property
+    def delivery_attempt(self) -> int:
+        """
+        The delivery attempt counter received from Pub/Sub.
+        The first delivery of a given message will have this value as 1. The value
+        is calculated at best effort and is approximate.
+        """
+        return self._delivery_attempt
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, GoogleMetadata):
             return False
-        return self.ack_id == o.ack_id
+
+        return self.ack_id == o.ack_id and self.delivery_attempt == o.delivery_attempt
 
     def __ne__(self, o: object) -> bool:
         return not self.__eq__(o)
@@ -82,10 +102,14 @@ class GoogleMetadata:
         return repr(self)
 
     def __repr__(self) -> str:
-        return f'GoogleMetadata(ack_id={self.ack_id})'
+        return (
+            'GoogleMetadata('
+            f'ack_id={self.ack_id}, publish_time={self.publish_time}, delivery_attempt={self.delivery_attempt}'
+            ')'
+        )
 
     def __hash__(self) -> int:
-        return hash((self.ack_id,))
+        return hash((self.ack_id, self.publish_time))
 
 
 def get_priority_suffix(priority: Priority) -> str:
@@ -147,7 +171,6 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def __init__(self, priority: Priority, dlq=False) -> None:
         self._publisher = None
         self._subscriber = None
-        self.message_retry_state: typing.Optional[MessageRetryStateBackend] = None
         if not settings.TASKHAWK_SYNC:
             cloud_project = get_google_cloud_project()
             self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
@@ -157,9 +180,6 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
                 cloud_project, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
             )
-        if settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND:
-            message_retry_state_cls = import_class(settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND)
-            self.message_retry_state = message_retry_state_cls()
 
     @property
     def publisher(self):
@@ -186,13 +206,12 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             return []
 
     def process_message(self, queue_message: ReceivedMessage) -> None:
-        try:
-            self.message_handler(
-                queue_message.message.data.decode(), GoogleMetadata(queue_message.ack_id),
-            )
-        except Exception:
-            if self._can_reprocess_message(queue_message):
-                raise
+        self.message_handler(
+            queue_message.message.data.decode(),
+            GoogleMetadata(
+                queue_message.ack_id, queue_message.message.publish_time, queue_message.message.delivery_attempt,
+            ),
+        )
 
     def delete_message(self, queue_message: ReceivedMessage) -> None:
         self.subscriber.acknowledge(self._subscription_path, [queue_message.ack_id])
@@ -253,78 +272,3 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                     )
 
             logging.info("Re-queued {} messages".format(len(queue_messages)))
-
-    def _can_reprocess_message(self, queue_message: ReceivedMessage) -> bool:
-        if not self.message_retry_state:
-            return True
-
-        try:
-            self.message_retry_state.inc(queue_message.message.message_id, self._subscription_path)
-            return True
-        except MaxRetriesExceededError:
-            self._move_message_to_dlq(queue_message)
-        return False
-
-    def _move_message_to_dlq(self, queue_message: ReceivedMessage) -> None:
-        future = self.publisher.publish(
-            self._dlq_topic_path, queue_message.message.data, **queue_message.message.attributes
-        )
-        # wait for success
-        future.result()
-        logger.debug('Sent message to DLQ', extra={'message_id': queue_message.message.message_id})
-
-
-class MaxRetriesExceededError(Exception):
-    pass
-
-
-class MessageRetryStateBackend:
-    def __init__(self) -> None:
-        self.max_tries = settings.TASKHAWK_GOOGLE_MESSAGE_MAX_RETRIES
-
-    def inc(self, message_id: str, queue_name: str) -> None:
-        raise NotImplementedError
-
-    @staticmethod
-    def _get_hash(message_id: str, queue_name: str) -> str:
-        return f"{queue_name}-{message_id}"
-
-
-class MessageRetryStateLocMem(MessageRetryStateBackend):
-    DB: typing.Counter = Counter()
-
-    def inc(self, message_id: str, queue_name: str) -> None:
-        key = self._get_hash(message_id, queue_name)
-        self.DB[key] += 1
-        if self.DB[key] >= self.max_tries:
-            raise MaxRetriesExceededError
-
-
-class MessageRetryStateRedis(MessageRetryStateBackend):
-    DEFAULT_EXPIRY_S = timedelta(days=1)
-
-    def __init__(self) -> None:
-        import redis
-
-        super().__init__()
-        self.client = redis.from_url(settings.TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_REDIS_URL)
-
-    def inc(self, message_id: str, queue_name: str) -> None:
-        # there's plenty of race conditions here that may lead to messages being processed twice, being published as
-        # duplicates in the DLQ, and so on. Clients must ensure the handlers are idempotent, or handle atomicity
-        # themselves.
-        key = self._get_hash(message_id, queue_name)
-        pipeline = self.client.pipeline()
-        try:
-            pipeline.incr(key)
-            pipeline.expire(key, self.DEFAULT_EXPIRY_S)
-            result = pipeline.execute()
-        finally:
-            pipeline.reset()
-            del pipeline
-        value = result[0]
-        # note: NOT strictly greater than
-        if value >= self.max_tries:
-            # no use of this key any more.
-            self.client.expire(key, 0)
-            raise MaxRetriesExceededError

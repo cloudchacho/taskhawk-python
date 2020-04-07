@@ -10,6 +10,8 @@ API reference
 
 .. attribute:: taskhawk.conf.settings.configured
 
+   Have Taskhawk settings been configured?
+
 .. module:: taskhawk
 
 .. autofunction:: listen_for_messages
@@ -29,6 +31,14 @@ API reference
    :member-order: bysource
 
 .. autofunction:: requeue_dead_letter
+
+.. autoclass:: GoogleMetadata
+   :members: ack_id, publish_time, delivery_attempt
+   :member-order: bysource
+
+.. autoclass:: AWSMetadata
+   :members: receipt
+   :member-order: bysource
 
 Exceptions
 ++++++++++

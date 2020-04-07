@@ -101,15 +101,6 @@ Tasks are held in SQS queue, or Pub/Sub Subscription until they're successfully 
 or until they fail a configurable number of times. Failed tasks are moved to a Dead
 Letter Queue, where they're held for 14 days, and may be examined for further debugging.
 
-Google Cloud Platform does not provide Dead Letter Queue support currently. You can enable custom DLQ support
-by setting ``TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND`` in your settings.
-
-Currently only 2 message retry state backends are available:
-
-* ``taskhawk.backends.gcp.MessageRetryStateLocMem`` - which stores retry state in consumer process local memory
-* ``taskhawk.backends.gcp.MessageRetryStateRedis`` - uses redis service to store message retry state.
-  This option requires ``TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_REDIS_URL`` - redis connection url.
-
 Priority
 --------
 

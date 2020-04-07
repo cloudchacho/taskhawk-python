@@ -109,22 +109,6 @@ It's recommended that this function be declared with ``**kwargs`` so it doesn't 
 
 optional; fully-qualified function name
 
-**TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_BACKEND**
-
-Class to store task's retry state
-
-optional; string; Google only
-
-**TASKHAWK_GOOGLE_MESSAGE_RETRY_STATE_REDIS_URL**
-
-required if ``MessageRetryStateRedis`` is used as task state retry backend; string; Google only
-
-**TASKHAWK_GOOGLE_MESSAGE_MAX_RETRIES**
-
-Number of task retries before moving message to dead letter queue (-DLQ)
-
-optional; int; default: 3; Google only
-
 **TASKHAWK_PRE_PROCESS_HOOK**
 
 A function which can used to plug into the message processing pipeline *before* any processing happens. This hook
