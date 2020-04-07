@@ -7,7 +7,7 @@ taskhawk
 
 
 # semantic versioning (http://semver.org/)
-VERSION = '3.2.2-dev'
+VERSION = '4.0.0-dev'
 
 
 try:
