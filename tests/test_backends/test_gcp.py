@@ -7,6 +7,7 @@ import pytest
 
 try:
     from google.cloud.pubsub_v1.proto.pubsub_pb2 import ReceivedMessage
+    from google.cloud.pubsub_v1.types import PubsubMessage
     from taskhawk.backends.gcp import GoogleMetadata
 except ImportError:
     pass
@@ -122,10 +123,11 @@ class TestGCPConsumer:
     def _build_gcp_received_message(message):
         queue_message = mock.create_autospec(ReceivedMessage, spec_set=True)
         queue_message.ack_id = "dummy_ack_id"
+        queue_message.message = mock.create_autospec(PubsubMessage, spec_set=True)
         queue_message.message.data = json.dumps(message.as_dict()).encode()
         queue_message.message.attributes = message.as_dict()['headers']
         queue_message.message.publish_time = arrow.utcnow().datetime
-        queue_message.message.delivery_attempt = 1
+        queue_message.delivery_attempt = 1
         return queue_message
 
     def test_pull_messages(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
@@ -213,9 +215,7 @@ class TestGCPConsumer:
         gcp_consumer.process_message.assert_called_once_with(queue_message)
         gcp_consumer.message_handler.assert_called_once_with(
             queue_message.message.data.decode(),
-            GoogleMetadata(
-                queue_message.ack_id, queue_message.message.publish_time, queue_message.message.delivery_attempt
-            ),
+            GoogleMetadata(queue_message.ack_id, queue_message.message.publish_time, queue_message.delivery_attempt),
         )
         gcp_consumer.subscriber.acknowledge.assert_called_once_with(
             gcp_consumer._subscription_path, [queue_message.ack_id]

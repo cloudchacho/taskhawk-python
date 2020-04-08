@@ -82,44 +82,43 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         message = self._build_message(message_json, provider_metadata)
         _log_received_message(message.as_dict())
 
-        try:
-            message.call_task()
-        except IgnoreException:
-            logger.info(f'Ignoring task {message.id}')
-            return
-        except LoggingException as e:
-            # log with message and extra
-            logger.exception(str(e), extra=e.extra)
-            # let it bubble up so message ends up in DLQ
-            raise
-        except RetryException:
-            # Retry without logging exception
-            logger.info('Retrying due to exception')
-            # let it bubble up so message ends up in DLQ
-            raise
-        except Exception:
-            logger.exception(f'Exception while processing message')
-            # let it bubble up so message ends up in DLQ
-            raise
+        message.call_task()
 
     def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> None:
         queue_messages = self.pull_messages(num_messages, visibility_timeout)
         for queue_message in queue_messages:
-            settings.TASKHAWK_PRE_PROCESS_HOOK(**self.pre_process_hook_kwargs(queue_message))
+            try:
+                settings.TASKHAWK_PRE_PROCESS_HOOK(**self.pre_process_hook_kwargs(queue_message))
+            except Exception:
+                logger.exception(f'Exception in post process hook for message', extra={'queue_message': queue_message})
+                continue
+
             try:
                 self.process_message(queue_message)
-                try:
-                    settings.TASKHAWK_POST_PROCESS_HOOK(**self.post_process_hook_kwargs(queue_message))
-                except Exception:
-                    logger.exception(f'Exception in post process hook for message: {queue_message}')
-                    raise
-                try:
-                    self.delete_message(queue_message)
-                except Exception:
-                    logger.exception(f'Exception while deleting message: {queue_message}')
+            except IgnoreException:
+                logger.info(f'Ignoring task', extra={'queue_message': queue_message})
+            except LoggingException as e:
+                # log with message and extra
+                logger.exception(str(e), extra=e.extra)
+                continue
+            except RetryException:
+                # Retry without logging exception
+                logger.info('Retrying due to exception')
+                continue
             except Exception:
-                # already logged in message_handler
-                pass
+                logger.exception(f'Exception while processing message')
+                continue
+
+            try:
+                settings.TASKHAWK_POST_PROCESS_HOOK(**self.post_process_hook_kwargs(queue_message))
+            except Exception:
+                logger.exception(f'Exception in post process hook for message', extra={'queue_message': queue_message})
+                continue
+
+            try:
+                self.delete_message(queue_message)
+            except Exception:
+                logger.exception(f'Exception while deleting message', extra={'queue_message': queue_message})
 
     def extend_visibility_timeout(self, visibility_timeout_s: int, metadata) -> None:
         """

@@ -208,9 +208,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def process_message(self, queue_message: ReceivedMessage) -> None:
         self.message_handler(
             queue_message.message.data.decode(),
-            GoogleMetadata(
-                queue_message.ack_id, queue_message.message.publish_time, queue_message.message.delivery_attempt,
-            ),
+            GoogleMetadata(queue_message.ack_id, queue_message.message.publish_time, queue_message.delivery_attempt),
         )
 
     def delete_message(self, queue_message: ReceivedMessage) -> None:
