@@ -211,8 +211,12 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             GoogleMetadata(queue_message.ack_id, queue_message.message.publish_time, queue_message.delivery_attempt),
         )
 
-    def delete_message(self, queue_message: ReceivedMessage) -> None:
+    def ack_message(self, queue_message: ReceivedMessage) -> None:
         self.subscriber.acknowledge(self._subscription_path, [queue_message.ack_id])
+
+    def nack_message(self, queue_message) -> None:
+        logging.info("nacking message")
+        queue_message.message.nack()
 
     @staticmethod
     def pre_process_hook_kwargs(queue_message: ReceivedMessage) -> dict:
@@ -263,7 +267,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                         extra={'message_id': queue_message.message.message_id},
                     )
 
-                    self.delete_message(queue_message)
+                    self.ack_message(queue_message)
                 except Exception:
                     logger.exception(
                         'Exception in requeue message from {} to {}'.format(self._subscription_path, topic_path)

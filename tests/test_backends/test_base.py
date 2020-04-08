@@ -77,7 +77,7 @@ class TestFetchAndProcessMessages:
         consumer_backend.pull_messages = mock.MagicMock()
         consumer_backend.pull_messages.return_value = [mock.MagicMock(), mock.MagicMock()]
         consumer_backend.process_message = mock.MagicMock()
-        consumer_backend.delete_message = mock.MagicMock()
+        consumer_backend.ack_message = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages(num_messages, visibility_timeout)
 
@@ -85,7 +85,7 @@ class TestFetchAndProcessMessages:
         consumer_backend.process_message.assert_has_calls(
             [mock.call(x) for x in consumer_backend.pull_messages.return_value]
         )
-        consumer_backend.delete_message.assert_has_calls(
+        consumer_backend.ack_message.assert_has_calls(
             [mock.call(x) for x in consumer_backend.pull_messages.return_value]
         )
 
@@ -103,14 +103,14 @@ class TestFetchAndProcessMessages:
         queue_message = mock.MagicMock()
         consumer_backend.pull_messages = mock.MagicMock(return_value=[queue_message])
         consumer_backend.process_message = mock.MagicMock()
-        consumer_backend.delete_message = mock.MagicMock(side_effect=Exception)
+        consumer_backend.ack_message = mock.MagicMock(side_effect=Exception)
 
         with mock.patch.object(base.logger, 'exception') as logging_mock:
             consumer_backend.fetch_and_process_messages()
 
             logging_mock.assert_called_once()
 
-        consumer_backend.delete_message.assert_called_once_with(consumer_backend.pull_messages.return_value[0])
+        consumer_backend.ack_message.assert_called_once_with(consumer_backend.pull_messages.return_value[0])
 
     def test_pre_process_hook(self, consumer_backend, settings):
         pre_process_hook.reset_mock()

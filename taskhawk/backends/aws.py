@@ -164,8 +164,12 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
         receipt = queue_message.receipt_handle
         self.message_handler(message_json, AWSMetadata(receipt))
 
-    def delete_message(self, queue_message) -> None:
+    def ack_message(self, queue_message) -> None:
         queue_message.delete()
+
+    def nack_message(self, queue_message) -> None:
+        # let visibility timeout take care of it
+        pass
 
     def extend_visibility_timeout(self, visibility_timeout_s: int, metadata: AWSMetadata) -> None:
         """
@@ -237,7 +241,10 @@ class AWSSNSConsumerBackend(TaskhawkConsumerBaseBackend):
     def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
         raise RuntimeError("invalid operation for backend")
 
-    def delete_message(self, queue_message) -> None:
+    def ack_message(self, queue_message) -> None:
+        raise RuntimeError("invalid operation for backend")
+
+    def nack_message(self, queue_message) -> None:
         raise RuntimeError("invalid operation for backend")
 
     def process_messages(self, lambda_event):
