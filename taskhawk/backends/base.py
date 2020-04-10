@@ -91,7 +91,6 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 settings.TASKHAWK_PRE_PROCESS_HOOK(**self.pre_process_hook_kwargs(queue_message))
             except Exception:
                 logger.exception(f'Exception in post process hook for message', extra={'queue_message': queue_message})
-                self.nack_message(queue_message)
                 continue
 
             try:
@@ -101,27 +100,23 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
             except LoggingException as e:
                 # log with message and extra
                 logger.exception(str(e), extra=e.extra)
-                self.nack_message(queue_message)
                 continue
             except RetryException:
                 # Retry without logging exception
                 logger.info('Retrying due to exception')
-                self.nack_message(queue_message)
                 continue
             except Exception:
                 logger.exception(f'Exception while processing message')
-                self.nack_message(queue_message)
                 continue
 
             try:
                 settings.TASKHAWK_POST_PROCESS_HOOK(**self.post_process_hook_kwargs(queue_message))
             except Exception:
                 logger.exception(f'Exception in post process hook for message', extra={'queue_message': queue_message})
-                self.nack_message(queue_message)
                 continue
 
             try:
-                self.ack_message(queue_message)
+                self.delete_message(queue_message)
             except Exception:
                 logger.exception(f'Exception while deleting message', extra={'queue_message': queue_message})
 
@@ -153,10 +148,7 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         # for lambda backend
         raise NotImplementedError
 
-    def ack_message(self, queue_message) -> None:
-        raise NotImplementedError
-
-    def nack_message(self, queue_message) -> None:
+    def delete_message(self, queue_message) -> None:
         raise NotImplementedError
 
     @staticmethod
