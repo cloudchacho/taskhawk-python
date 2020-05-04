@@ -238,7 +238,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         :param visibility_timeout: The number of seconds the message should remain invisible to other queue readers.
         Defaults to None, which is queue default
         """
-        topic_path = self._dlq_topic_path[: len('-dlq')]
+        topic_path = self._dlq_topic_path[: -len('-dlq')]
         logging.info("Re-queueing messages from {} to {}".format(self._subscription_path, topic_path))
         while True:
             queue_messages = self.pull_messages(num_messages=num_messages, visibility_timeout=visibility_timeout)
