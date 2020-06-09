@@ -31,7 +31,7 @@ git fetch upstream
 git checkout upstream/master
 git reset --hard upstream/master
 
-pip install -U bumpversion
+pip install bumpversion==0.5.3
 
 # go to a branch so we can ref it
 git checkout -b new_master
