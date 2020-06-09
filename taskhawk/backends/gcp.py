@@ -226,6 +226,8 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         """
         Extends visibility timeout of a message on a given priority queue for long running tasks.
         """
+        if settings.TASKHAWK_SYNC:
+            return
         if visibility_timeout_s < 0 or visibility_timeout_s > 600:
             raise ValueError("Invalid visibility_timeout_s")
         self.subscriber.modify_ack_deadline(self._subscription_path, [metadata.ack_id], visibility_timeout_s)

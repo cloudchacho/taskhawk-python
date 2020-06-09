@@ -188,7 +188,7 @@ class TestGCPConsumer:
             ]
         )
         gcp_consumer._publisher.publish.assert_called_once_with(
-            gcp_consumer._dlq_topic_path[: len("-dlq")], data=queue_message.message.data, **message.headers
+            gcp_consumer._dlq_topic_path[: -len("-dlq")], data=queue_message.message.data, **message.headers
         )
         gcp_consumer.subscriber.acknowledge.assert_called_once_with(
             gcp_consumer._subscription_path, [queue_message.ack_id]
