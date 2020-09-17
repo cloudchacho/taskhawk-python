@@ -158,3 +158,5 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+suppress_warnings = ["autodoc.import_object"]

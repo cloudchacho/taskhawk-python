@@ -37,7 +37,7 @@ grpc-google-iam-v1==0.12.3  # via google-cloud-pubsub
 grpcio==1.32.0            # via google-api-core, googleapis-common-protos, grpc-google-iam-v1
 idna==2.10                # via moto, requests
 imagesize==1.2.0          # via sphinx
-importlib-metadata==1.7.0  # via flake8, jsonpickle, jsonschema, pluggy, pytest
+importlib-metadata==1.7.0  # via jsonpickle
 iniconfig==1.0.1          # via pytest
 ipdb==0.13.3              # via taskhawk
 ipython-genutils==0.2.0   # via traitlets
@@ -108,7 +108,7 @@ sshpubkeys==3.1.0         # via moto
 toml==0.10.1              # via black, pytest
 traitlets==5.0.4          # via ipython
 typed-ast==1.4.1          # via black, mypy
-typing-extensions==3.7.4.3  # via black, boto3-stubs, libcst, mypy, mypy-boto3-sns, mypy-boto3-sqs, typing-inspect
+typing-extensions==3.7.4.3  # via black, libcst, mypy, typing-inspect
 typing-inspect==0.6.0     # via libcst
 urllib3==1.25.10          # via botocore, requests, responses
 wcwidth==0.2.5            # via prompt-toolkit

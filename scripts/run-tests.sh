@@ -2,9 +2,6 @@
 
 set -ex
 
-# https://github.com/travis-ci/travis-ci/issues/7940
-export BOTO_CONFIG=/dev/null
-
 options="-v -s --strict --cov=taskhawk --cov-report=html --cov-report=term"
 
 if [ -z "${target}" ]; then
@@ -15,7 +12,10 @@ options="${target} ${options}"
 
 mypy taskhawk
 
-python3 -m pytest -p no:taskhawk ${options}
+# make sure taskhawk can be imported without SETTINGS_MODULE set
+python3 -c 'import taskhawk'
+
+python3 -b -m pytest -p no:taskhawk ${options}
 
 black --check .
 

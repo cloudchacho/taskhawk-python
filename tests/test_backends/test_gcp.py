@@ -1,4 +1,5 @@
 import json
+from time import time
 from unittest import mock
 
 import arrow
@@ -6,8 +7,7 @@ import funcy
 import pytest
 
 try:
-    from google.cloud.pubsub_v1.proto.pubsub_pb2 import ReceivedMessage
-    from google.cloud.pubsub_v1.types import PubsubMessage
+    from google.cloud.pubsub_v1.types import PubsubMessage, ReceivedMessage
     from taskhawk.backends.gcp import GoogleMetadata
 except ImportError:
     pass
@@ -17,8 +17,8 @@ from taskhawk.models import Priority
 gcp = pytest.importorskip('taskhawk.backends.gcp')
 
 
-@pytest.fixture
-def gcp_settings(settings):
+@pytest.fixture(autouse=True, name="gcp_settings")
+def _gcp_settings(settings):
     settings.GOOGLE_APPLICATION_CREDENTIALS = "DUMMY_GOOGLE_APPLICATION_CREDENTIALS"
     settings.TASKHAWK_PUBLISHER_BACKEND = "taskhawk.backends.gcp.GooglePubSubPublisherBackend"
     settings.TASKHAWK_CONSUMER_BACKEND = "taskhawk.backends.gcp.GooglePubSubConsumerBackend"
@@ -37,16 +37,16 @@ class TestPubSubPublisher:
             [Priority.bulk, 'taskhawk-myqueue-bulk'],
         ],
     )
-    def test_constructor_topic_path(self, priority, topic, mock_pubsub_v1, gcp_settings):
+    def test_constructor_topic_path(self, priority, topic, mock_pubsub_v1):
         settings.TASKHAWK_QUEUE = 'myqueue'
         gcp_publisher = gcp.GooglePubSubPublisherBackend(priority=priority)
         assert gcp_publisher._topic_path == f'projects/DUMMY_PROJECT_ID/topics/{topic}'
 
-    def test_constructor(self, mock_pubsub_v1, gcp_settings):
+    def test_constructor(self, mock_pubsub_v1):
         gcp_publisher = gcp.GooglePubSubPublisherBackend(priority=Priority.default)
         assert gcp_publisher.publisher == mock_pubsub_v1.PublisherClient()
 
-    def test_publish_success(self, mock_pubsub_v1, message, gcp_settings):
+    def test_publish_success(self, mock_pubsub_v1, message):
         gcp_publisher = gcp.GooglePubSubPublisherBackend(priority=message.priority)
         message_data = json.dumps(message.as_dict())
 
@@ -56,7 +56,7 @@ class TestPubSubPublisher:
             gcp_publisher._topic_path, data=message_data.encode(), **message.headers
         )
 
-    def test_async_publish_success(self, mock_pubsub_v1, message, gcp_settings):
+    def test_async_publish_success(self, mock_pubsub_v1, message):
         gcp_publisher = gcp.GooglePubSubAsyncPublisherBackend(priority=message.priority)
         message_data = json.dumps(message.as_dict())
 
@@ -108,39 +108,43 @@ class TestGCPConsumer:
             [Priority.bulk, 'taskhawk-myqueue-bulk'],
         ],
     )
-    def test_constructor_subscription_path(self, priority, queue, mock_pubsub_v1, gcp_settings):
+    def test_constructor_subscription_path(self, priority, queue, mock_pubsub_v1):
         settings.TASKHAWK_QUEUE = 'myqueue'
         gcp_consumer = gcp.GooglePubSubConsumerBackend(priority=priority)
         assert gcp_consumer._subscription_path == f'projects/DUMMY_PROJECT_ID/subscriptions/{queue}'
         assert gcp_consumer._dlq_topic_path == f'projects/DUMMY_PROJECT_ID/topics/{queue}-dlq'
 
-    def test_constructor(self, mock_pubsub_v1, gcp_settings):
+    def test_constructor(self, mock_pubsub_v1):
         gcp_consumer = gcp.GooglePubSubConsumerBackend(priority=Priority.default)
         assert gcp_consumer.subscriber == mock_pubsub_v1.SubscriberClient()
         assert gcp_consumer.publisher == mock_pubsub_v1.PublisherClient()
 
     @staticmethod
     def _build_gcp_received_message(message):
-        queue_message = mock.create_autospec(ReceivedMessage, spec_set=True)
+        queue_message = mock.create_autospec(ReceivedMessage)
         queue_message.ack_id = "dummy_ack_id"
-        queue_message.message = mock.create_autospec(PubsubMessage, spec_set=True)
+        queue_message.message = mock.create_autospec(PubsubMessage)
+        queue_message.message.message_id = str(time())
         queue_message.message.data = json.dumps(message.as_dict()).encode()
         queue_message.message.attributes = message.as_dict()['headers']
         queue_message.message.publish_time = arrow.utcnow().datetime
         queue_message.delivery_attempt = 1
         return queue_message
 
-    def test_pull_messages(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+    def test_pull_messages(self, mock_pubsub_v1, gcp_consumer, gcp_settings):
         num_messages = 1
         visibility_timeout = 10
 
         gcp_consumer.pull_messages(num_messages, visibility_timeout)
 
         gcp_consumer.subscriber.pull.assert_called_once_with(
-            gcp_consumer._subscription_path, num_messages, retry=None, timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S
+            subscription=gcp_consumer._subscription_path,
+            max_messages=num_messages,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
         )
 
-    def test_success_extend_visibility_timeout(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+    def test_success_extend_visibility_timeout(self, mock_pubsub_v1, gcp_consumer):
         visibility_timeout_s = 10
         ack_id = "dummy_ack_id"
         publish_time = arrow.utcnow().datetime
@@ -151,7 +155,7 @@ class TestGCPConsumer:
         )
 
         gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with(
-            gcp_consumer._subscription_path, [ack_id], visibility_timeout_s
+            subscription=gcp_consumer._subscription_path, ack_ids=[ack_id], ack_deadline_seconds=visibility_timeout_s
         )
 
     @pytest.mark.parametrize("visibility_timeout", [-1, 601])
@@ -167,7 +171,7 @@ class TestGCPConsumer:
         gcp_consumer.subscriber.subscription_path.assert_not_called()
         gcp_consumer.subscriber.modify_ack_deadline.assert_not_called()
 
-    def test_success_requeue_dead_letter(self, mock_pubsub_v1, gcp_settings, message):
+    def test_success_requeue_dead_letter(self, mock_pubsub_v1, message):
         gcp_consumer = gcp.GooglePubSubConsumerBackend(priority=Priority.default, dlq=True)
 
         num_messages = 1
@@ -179,7 +183,9 @@ class TestGCPConsumer:
         gcp_consumer.requeue_dead_letter(num_messages=num_messages, visibility_timeout=visibility_timeout)
 
         gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with(
-            gcp_consumer._subscription_path, [queue_message.ack_id], visibility_timeout
+            subscription=gcp_consumer._subscription_path,
+            ack_ids=[queue_message.ack_id],
+            ack_deadline_seconds=visibility_timeout,
         )
         gcp_consumer.pull_messages.assert_has_calls(
             [
@@ -191,7 +197,7 @@ class TestGCPConsumer:
             gcp_consumer._dlq_topic_path[: -len("-dlq")], data=queue_message.message.data, **message.headers
         )
         gcp_consumer.subscriber.acknowledge.assert_called_once_with(
-            gcp_consumer._subscription_path, [queue_message.ack_id]
+            subscription=gcp_consumer._subscription_path, ack_ids=[queue_message.ack_id]
         )
 
     def test_fetch_and_process_messages_success(self, mock_pubsub_v1, gcp_settings, message, gcp_consumer, reset_mocks):
@@ -210,7 +216,10 @@ class TestGCPConsumer:
         gcp_consumer.fetch_and_process_messages(num_messages, visibility_timeout)
 
         gcp_consumer.subscriber.pull.assert_called_once_with(
-            gcp_consumer._subscription_path, num_messages, retry=None, timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S
+            subscription=gcp_consumer._subscription_path,
+            max_messages=num_messages,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
         )
         gcp_consumer.process_message.assert_called_once_with(queue_message)
         gcp_consumer.message_handler.assert_called_once_with(
@@ -218,7 +227,7 @@ class TestGCPConsumer:
             GoogleMetadata(queue_message.ack_id, queue_message.message.publish_time, queue_message.delivery_attempt),
         )
         gcp_consumer.subscriber.acknowledge.assert_called_once_with(
-            gcp_consumer._subscription_path, [queue_message.ack_id]
+            subscription=gcp_consumer._subscription_path, ack_ids=[queue_message.ack_id]
         )
         pre_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
         post_process_hook.assert_called_once_with(google_pubsub_message=queue_message)

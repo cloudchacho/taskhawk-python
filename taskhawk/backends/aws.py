@@ -2,11 +2,15 @@ import json
 import logging
 import typing
 from concurrent.futures import Future
+from typing import Optional
 from unittest import mock
 
 import boto3
 import funcy
 from botocore.config import Config
+from mypy_boto3_sns import SNSClient
+from mypy_boto3_sqs import SQSClient
+from mypy_boto3_sqs.service_resource import SQSServiceResource
 from retrying import retry
 
 from taskhawk.backends.base import (
@@ -49,7 +53,7 @@ class AWSMetadata:
 
 class AWSSNSPublisherBackend(TaskhawkPublisherBaseBackend):
     def __init__(self, priority: Priority):
-        self._sns_client = None
+        self._sns_client: Optional[SNSClient] = None
         self.topic_name = (
             f'arn:aws:sns:{settings.AWS_REGION}:{settings.AWS_ACCOUNT_ID}:taskhawk-{settings.TASKHAWK_QUEUE.lower()}'
             f'{self.get_priority_suffix(priority)}'
@@ -94,7 +98,10 @@ class AWSSNSPublisherBackend(TaskhawkPublisherBaseBackend):
         return sqs_message
 
     def _publish(
-        self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None,
+        self,
+        message: Message,
+        payload: str,
+        headers: typing.Optional[typing.Mapping] = None,
     ) -> typing.Union[str, Future]:
         return self._publish_over_sns(self.topic_name, payload, headers or {})
 
@@ -104,8 +111,8 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
 
     def __init__(self, priority: Priority, dlq=False):
 
-        self._sqs_resource = None
-        self._sqs_client = None
+        self._sqs_resource: Optional[SQSServiceResource] = None
+        self._sqs_client: Optional[SQSClient] = None
         self.queue_name = (
             f'TASKHAWK-{settings.TASKHAWK_QUEUE.upper()}{self.get_priority_suffix(priority)}{"-DLQ" if dlq else ""}'
         )

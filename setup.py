@@ -23,16 +23,16 @@ with open('taskhawk/__init__.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
 tests_require = [
-    'pytest',
-    'flake8',
-    'mypy',
-    'pytest-env',
-    'ipdb',
+    'black',
     'coverage',
     'coveralls',
-    'pytest-cov',
-    'black',
+    'flake8',
+    'ipdb',
     'moto',
+    'mypy',
+    'pytest',
+    'pytest-cov',
+    'pytest-env',
 ]
 
 setup(
@@ -66,7 +66,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['funcy', 'arrow'],
+    install_requires=['funcy', 'arrow', 'dataclasses; python_version<"3.7"'],
     tests_require=tests_require,
     setup_requires=['pytest-runner'],
     # List additional groups of dependencies here (e.g. development
@@ -75,8 +75,8 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         'aws': ['boto3', 'retrying'],
-        'gcp': ['google-cloud-pubsub', 'redis'],
-        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools', 'wheel'],
+        'gcp': ['google-cloud-pubsub>=2.0.0'],
+        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools', 'wheel', 'boto3-stubs[sns,sqs]'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },

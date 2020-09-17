@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 if [[ -z "${PYTHON_VERSIONS}" ]]; then
     echo "Unspecified PYTHON_VERSIONS, cannot proceed"
@@ -10,10 +10,16 @@ pip install pip-tools
 out_file=requirements/publish.txt
 # always rebuild from scratch
 rm -f "$out_file"
-pip-compile --no-index --no-header requirements/publish.in -o "$out_file"
+pip-compile --no-emit-index-url --no-header requirements/publish.in -o "$out_file"
+
+pyenv init || true
+
+eval "$(pyenv init -)"
 
 PYTHON_VERSIONS_ARRAY=$(echo $PYTHON_VERSIONS | tr "," "\n")
 for PYTHON_VERSION in $PYTHON_VERSIONS_ARRAY; do
+    pyenv shell $PYTHON_VERSION
+
     pip install pip-tools
 
     python_major_version=$(echo ${PYTHON_VERSION} | cut -f1 -d'.')
@@ -24,7 +30,7 @@ for PYTHON_VERSION in $PYTHON_VERSIONS_ARRAY; do
     # always rebuild from scratch
     rm -f "$out_file"
 
-    pip-compile --no-index --no-header requirements/dev.in -o "$out_file"
+    pip-compile --no-emit-index-url --no-header requirements/dev.in -o "$out_file"
 
     # remove "-e ." line - it's expanded to full path by pip-compile
     # which is most likely a developer's home directory

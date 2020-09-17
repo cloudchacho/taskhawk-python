@@ -102,10 +102,10 @@ the ``pip install taskhawk`` defined above:
 
     $ git clone https://github.com/Automatic/taskhawk-python.git
     $ cd taskhawk-python
-    $ pyenv virtualenv 3.6.5 taskhawk-3.6
+    $ pyenv virtualenv 3.7.7 taskhawk-python-3.7
     ...
-    $ pyenv activate taskhawk-3.6
-    $ pip install -r requirements/dev-3.6.txt
+    $ pyenv activate taskhawk-python-3.7
+    $ pip install -r requirements/dev-3.7.txt
 
 Running Tests
 ~~~~~~~~~~~~~

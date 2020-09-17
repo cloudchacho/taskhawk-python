@@ -1,16 +1,17 @@
+import dataclasses
 import json
 import logging
 import typing
 from contextlib import contextmanager, ExitStack
 from datetime import datetime
 from typing import cast, Generator
-
 from unittest import mock
+
 from google.api_core.exceptions import DeadlineExceeded
 from google.auth import environment_vars as google_env_vars, default as google_auth_default
 from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.futures import Future
-from google.cloud.pubsub_v1.proto.pubsub_pb2 import ReceivedMessage
+from google.cloud.pubsub_v1.types import ReceivedMessage
 
 from taskhawk.backends.base import (
     TaskhawkPublisherBaseBackend,
@@ -59,57 +60,28 @@ def get_google_cloud_project() -> str:
     return settings.GOOGLE_CLOUD_PROJECT
 
 
-# TODO move to dataclasses in py3.7
+@dataclasses.dataclass(frozen=True)
 class GoogleMetadata:
-    def __init__(self, ack_id: str, publish_time: datetime, delivery_attempt: int):
-        self._ack_id = ack_id
-        self._publish_time: datetime = publish_time
-        self._delivery_attempt = delivery_attempt
+    """
+    Google Pub/Sub specific metadata for a Message
+    """
 
-    @property
-    def ack_id(self) -> str:
-        """
-        The ID used to ack the message
-        """
-        return self._ack_id
+    ack_id: str
+    """
+    The ID used to ack the message
+    """
 
-    @property
-    def publish_time(self) -> datetime:
-        """
-        Time this message was originally published to Pub/Sub
-        """
-        return self._publish_time
+    publish_time: datetime
+    """
+    Time this message was originally published to Pub/Sub
+    """
 
-    @property
-    def delivery_attempt(self) -> int:
-        """
-        The delivery attempt counter received from Pub/Sub.
-        The first delivery of a given message will have this value as 1. The value
-        is calculated at best effort and is approximate.
-        """
-        return self._delivery_attempt
-
-    def __eq__(self, o: object) -> bool:
-        if not isinstance(o, GoogleMetadata):
-            return False
-
-        return self.ack_id == o.ack_id and self.delivery_attempt == o.delivery_attempt
-
-    def __ne__(self, o: object) -> bool:
-        return not self.__eq__(o)
-
-    def __str__(self) -> str:
-        return repr(self)
-
-    def __repr__(self) -> str:
-        return (
-            'GoogleMetadata('
-            f'ack_id={self.ack_id}, publish_time={self.publish_time}, delivery_attempt={self.delivery_attempt}'
-            ')'
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.ack_id, self.publish_time))
+    delivery_attempt: int
+    """
+    The delivery attempt counter received from Pub/Sub.
+    The first delivery of a given message will have this value as 1. The value
+    is calculated as best effort and is approximate.
+    """
 
 
 def get_priority_suffix(priority: Priority) -> str:
@@ -156,7 +128,12 @@ class GooglePubSubAsyncPublisherBackend(TaskhawkPublisherBaseBackend):
         gcp_message.ack_id = 'test-receipt'
         return gcp_message
 
-    def _publish(self, message: Message, payload: str, headers: typing.Optional[typing.Mapping] = None,) -> str:
+    def _publish(
+        self,
+        message: Message,
+        payload: str,
+        headers: typing.Optional[typing.Mapping] = None,
+    ) -> str:
         return self.publish_to_topic(self._topic_path, payload.encode("utf8"), headers)
 
 
@@ -178,7 +155,8 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}{"-dlq" if dlq else ""}',
             )
             self._dlq_topic_path: str = pubsub_v1.PublisherClient.topic_path(
-                cloud_project, f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
+                cloud_project,
+                f'taskhawk-{settings.TASKHAWK_QUEUE.lower()}{get_priority_suffix(priority)}-dlq',
             )
 
     @property
@@ -195,10 +173,13 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 self._subscriber = pubsub_v1.SubscriberClient()
         return self._subscriber
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
+    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List[ReceivedMessage]:
         try:
             received_messages = self.subscriber.pull(
-                self._subscription_path, num_messages, retry=None, timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+                subscription=self._subscription_path,
+                max_messages=num_messages,
+                retry=None,
+                timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             ).received_messages
             return received_messages
         except DeadlineExceeded:
@@ -212,7 +193,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         )
 
     def delete_message(self, queue_message: ReceivedMessage) -> None:
-        self.subscriber.acknowledge(self._subscription_path, [queue_message.ack_id])
+        self.subscriber.acknowledge(subscription=self._subscription_path, ack_ids=[queue_message.ack_id])
 
     @staticmethod
     def pre_process_hook_kwargs(queue_message: ReceivedMessage) -> dict:
@@ -230,7 +211,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             return
         if visibility_timeout_s < 0 or visibility_timeout_s > 600:
             raise ValueError("Invalid visibility_timeout_s")
-        self.subscriber.modify_ack_deadline(self._subscription_path, [metadata.ack_id], visibility_timeout_s)
+        self.subscriber.modify_ack_deadline(
+            subscription=self._subscription_path, ack_ids=[metadata.ack_id], ack_deadline_seconds=visibility_timeout_s
+        )
 
     def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: int = None) -> None:
         """
@@ -243,7 +226,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         topic_path = self._dlq_topic_path[: -len('-dlq')]
         logging.info("Re-queueing messages from {} to {}".format(self._subscription_path, topic_path))
         while True:
-            queue_messages = self.pull_messages(num_messages=num_messages, visibility_timeout=visibility_timeout)
+            queue_messages: typing.List[ReceivedMessage] = self.pull_messages(
+                num_messages=num_messages, visibility_timeout=visibility_timeout
+            )
             if not queue_messages:
                 break
 
@@ -252,7 +237,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 try:
                     if visibility_timeout:
                         self.subscriber.modify_ack_deadline(
-                            self._subscription_path, [queue_message.ack_id], visibility_timeout
+                            subscription=self._subscription_path,
+                            ack_ids=[queue_message.ack_id],
+                            ack_deadline_seconds=visibility_timeout,
                         )
 
                     future = self.publisher.publish(
