@@ -45,4 +45,4 @@ If Celery workers also publish async tasks:
 #. Terminate Celery worker processes.
 
 
-.. _taskhawk_terraform_generator: https://github.com/Automatic/taskhawk-terraform-generator
+.. _taskhawk_terraform_generator: https://github.com/cloudchacho/taskhawk-terraform-generator

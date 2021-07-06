@@ -107,7 +107,7 @@ Priority
 Taskhawk provides 4 priority queues to use, which may be customized per task, or per message.
 For more details, see :class:`taskhawk.Priority`.
 
-.. _Github: https://github.com/Automatic/taskhawk-python
+.. _Github: https://github.com/cloudchacho/taskhawk-python
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
 .. _Flask config: https://flask.palletsprojects.com/en/1.1.x/config/
-.. _Taskhawk Terraform Generator: https://github.com/Automatic/taskhawk-terraform-generator
+.. _Taskhawk Terraform Generator: https://github.com/cloudchacho/taskhawk-terraform-generator

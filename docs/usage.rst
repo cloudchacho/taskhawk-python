@@ -113,5 +113,5 @@ Internally, all tasks are converted into a message that looks like this:
 
 
 .. _lambda_sns_format: https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
-.. _taskhawk_terraform_generator: https://github.com/Automatic/taskhawk-terraform-generator
+.. _taskhawk_terraform_generator: https://github.com/cloudchacho/taskhawk-terraform-generator
 

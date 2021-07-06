@@ -40,7 +40,7 @@ setup(
     version=version,
     description='Taskhawk Python Library',
     long_description=long_description,
-    url='https://github.com/Automatic/taskhawk-python',
+    url='https://github.com/cloudchacho/taskhawk-python',
     author='Automatic Labs',
     license='Apache Software License (Apache License 2.0)',
     maintainer='Aniruddha Maru',

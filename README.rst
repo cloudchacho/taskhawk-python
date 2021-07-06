@@ -1,11 +1,11 @@
 Taskhawk Library for Python
 ===========================
 
-.. image:: https://travis-ci.org/Automatic/taskhawk-python.svg?branch=master
-    :target: https://travis-ci.org/Automatic/taskhawk-python
+.. image:: https://travis-ci.org/cloudchacho/taskhawk-python.svg?branch=master
+    :target: https://travis-ci.org/cloudchacho/taskhawk-python
 
-.. image:: https://coveralls.io/repos/github/Automatic/taskhawk-python/badge.svg?branch=master
-    :target: https://coveralls.io/github/Automatic/taskhawk-python?branch=master
+.. image:: https://coveralls.io/repos/github/cloudchacho/taskhawk-python/badge.svg?branch=master
+    :target: https://coveralls.io/github/cloudchacho/taskhawk-python?branch=master
 
 .. image:: https://img.shields.io/pypi/v/taskhawk.svg?style=flat-square
     :target: https://pypi.python.org/pypi/taskhawk
@@ -100,7 +100,7 @@ the ``pip install taskhawk`` defined above:
 
 .. code:: sh
 
-    $ git clone https://github.com/Automatic/taskhawk-python.git
+    $ git clone https://github.com/cloudchacho/taskhawk-python.git
     $ cd taskhawk-python
     $ pyenv virtualenv 3.7.7 taskhawk-python-3.7
     ...
@@ -134,7 +134,7 @@ Getting Help
 
 We use GitHub issues for tracking bugs and feature requests.
 
-* If it turns out that you may have found a bug, please `open an issue <https://github.com/Automatic/taskhawk-python/issues/new>`__
+* If it turns out that you may have found a bug, please `open an issue <https://github.com/cloudchacho/taskhawk-python/issues/new>`__
 
 .. _Read the Docs: https://taskhawk.readthedocs.io/en/latest/
 .. _Django settings: https://docs.djangoproject.com/en/2.0/topics/settings/
