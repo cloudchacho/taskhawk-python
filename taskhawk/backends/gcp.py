@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import cast, Generator
 from unittest import mock
 
-from google.api_core.exceptions import DeadlineExceeded
+from google.api_core.exceptions import DeadlineExceeded, ServiceUnavailable
 from google.auth import environment_vars as google_env_vars, default as google_auth_default
 from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.futures import Future
@@ -175,15 +175,17 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
 
     def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List[ReceivedMessage]:
         try:
-            received_messages = self.subscriber.pull(
+            return self.subscriber.pull(
                 subscription=self._subscription_path,
                 max_messages=num_messages,
                 retry=None,
                 timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             ).received_messages
-            return received_messages
         except DeadlineExceeded:
             logger.debug(f"Pulling deadline exceeded subscription={self._subscription_path}")
+            return []
+        except ServiceUnavailable as err:
+            logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")
             return []
 
     def process_message(self, queue_message: ReceivedMessage) -> None:
