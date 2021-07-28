@@ -7,6 +7,7 @@ import funcy
 import pytest
 
 try:
+    from google.api_core.exceptions import ServiceUnavailable
     from google.cloud.pubsub_v1.types import PubsubMessage, ReceivedMessage
     from taskhawk.backends.gcp import GoogleMetadata
 except ImportError:
@@ -137,6 +138,21 @@ class TestGCPConsumer:
 
         gcp_consumer.pull_messages(num_messages, visibility_timeout)
 
+        gcp_consumer.subscriber.pull.assert_called_once_with(
+            subscription=gcp_consumer._subscription_path,
+            max_messages=num_messages,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+        )
+
+    def test_pull_messages_service_unavailable(self, mock_pubsub_v1, gcp_consumer, gcp_settings):
+        num_messages = 1
+        visibility_timeout = 10
+
+        gcp_consumer.subscriber.pull = mock.MagicMock(side_effect=ServiceUnavailable("foobar"))
+        results = gcp_consumer.pull_messages(num_messages, visibility_timeout)
+
+        assert results == []
         gcp_consumer.subscriber.pull.assert_called_once_with(
             subscription=gcp_consumer._subscription_path,
             max_messages=num_messages,
