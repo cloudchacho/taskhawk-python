@@ -12,7 +12,7 @@ from taskhawk.publisher import publish
 _ALL_TASKS: dict = {}
 
 
-def task(*args, priority: Priority = Priority.default, name: typing.Optional[str] = None) -> typing.Callable:
+def task(*args, priority: Priority = Priority.default, name: typing.Optional[str] = None) -> typing.Any:
     """
     Decorator for taskhawk task functions. Any function may be converted into a task by adding this decorator
     as such:
