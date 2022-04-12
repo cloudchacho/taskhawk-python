@@ -31,25 +31,25 @@ git fetch upstream
 git checkout upstream/master
 git reset --hard upstream/master
 
-pip install bumpversion==0.5.3
+pip install bump2version==1.0.1
 
 # go to a branch so we can ref it
 git checkout -b new_master
 
 if [[ "${PART}" != "patch" ]]; then
     # Versioning assumes you're releasing patch
-    bumpversion --verbose ${PART} --no-tag
+    bump2version --verbose ${PART} --no-tag
 fi
 
 # release current dev version
-bumpversion --verbose release
+bump2version --verbose release
 
 released_version=$(git tag -l --points-at HEAD)
 
 ./scripts/distribute.sh
 
 # prep next dev version
-bumpversion --verbose patch --no-tag
+bump2version --verbose patch --no-tag
 
 git push upstream new_master:master --tags
 
