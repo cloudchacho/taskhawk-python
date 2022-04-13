@@ -232,4 +232,4 @@ class Task:
         """
         if name in _ALL_TASKS:
             return _ALL_TASKS[name]
-        raise TaskNotFound
+        raise TaskNotFound(name)
