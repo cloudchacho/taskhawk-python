@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**Current version: v4.1.3-dev**
+**Current version: v4.1.3**
 
 v2.0
 ~~~~
