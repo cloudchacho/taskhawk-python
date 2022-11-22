@@ -266,6 +266,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             logging.info("Re-queued {} messages".format(len(queue_messages)))
 
     def health_check(self) -> None:
+        """
+        Checks that subscriber can synchronously pull messages from the queue.
+        """
         try:
             self.subscriber.pull(
                 subscription=self._subscription_path,
