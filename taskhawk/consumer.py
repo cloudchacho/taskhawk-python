@@ -60,3 +60,15 @@ def listen_for_messages(
             )
         else:
             break
+
+
+def health_check() -> None:
+    """
+    Checks if the Taskhawk consumer is healthy.
+
+    Concretely, this function checks that the message queue service is available. 
+    
+    If unavailable, this function raises an exception.
+    """
+    consumer_backend = get_consumer_backend()
+    consumer_backend.health_check()
