@@ -33,8 +33,7 @@ class TestListenForMessages:
 
 
 @mock.patch('taskhawk.consumer.get_consumer_backend', autospec=True)
-def test_health_check_ok(mock_get_backend):
-
+def test_health_check_success(mock_get_backend):
     health_check()
 
     mock_get_backend.assert_called_once_with()

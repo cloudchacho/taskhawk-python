@@ -14,6 +14,7 @@ except ImportError:
     pass
 from taskhawk.conf import settings
 from taskhawk.models import Priority
+from taskhawk.exceptions import ConsumerHealthCheckFailed
 
 gcp = pytest.importorskip('taskhawk.backends.gcp')
 
@@ -247,3 +248,28 @@ class TestGCPConsumer:
         )
         pre_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
         post_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
+
+    def test_health_check_success(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        gcp_consumer.health_check()
+
+        gcp_consumer.subscriber.pull.assert_called_once_with(
+            subscription=gcp_consumer._subscription_path,
+            max_messages=1,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+        )
+
+    def test_health_check_failure(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        gcp_consumer.subscriber.pull.side_effect = ServiceUnavailable("Service Unavailable")
+
+        with pytest.raises(ConsumerHealthCheckFailed) as exc_info:
+            gcp_consumer.health_check()
+
+        gcp_consumer.subscriber.pull.assert_called_once_with(
+            subscription=gcp_consumer._subscription_path,
+            max_messages=1,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+        )
+        assert exc_info.value.args[0] == 'Consumer health check failed'
+        assert isinstance(exc_info.value.__cause__, ServiceUnavailable)

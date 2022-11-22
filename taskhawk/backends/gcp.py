@@ -20,6 +20,7 @@ from taskhawk.backends.base import (
 from taskhawk.backends.utils import override_env
 from taskhawk.conf import settings
 from taskhawk.models import Message, Priority
+from taskhawk.exceptions import ConsumerHealthCheckFailed
 
 
 logger = logging.getLogger(__name__)
@@ -263,3 +264,14 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                     )
 
             logging.info("Re-queued {} messages".format(len(queue_messages)))
+
+    def health_check(self) -> None:
+        try:
+            self.subscriber.pull(
+                subscription=self._subscription_path,
+                max_messages=1,
+                retry=None,
+                timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+            )
+        except Exception as err:
+            raise ConsumerHealthCheckFailed(f"Consumer health check failed") from err
