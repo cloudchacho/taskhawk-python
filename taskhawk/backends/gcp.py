@@ -279,4 +279,4 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         except DeadlineExceeded:
             return
         except Exception as err:
-            raise ConsumerHealthCheckFailed(f"Consumer health check failed") from err
+            raise ConsumerHealthCheckFailed("Consumer health check failed") from err
