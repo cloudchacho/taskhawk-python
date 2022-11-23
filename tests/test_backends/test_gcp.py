@@ -7,7 +7,7 @@ import funcy
 import pytest
 
 try:
-    from google.api_core.exceptions import ServiceUnavailable
+    from google.api_core.exceptions import ServiceUnavailable, DeadlineExceeded
     from google.cloud.pubsub_v1.types import PubsubMessage, ReceivedMessage
     from taskhawk.backends.gcp import GoogleMetadata
 except ImportError:
@@ -273,3 +273,15 @@ class TestGCPConsumer:
         )
         assert exc_info.value.args[0] == 'Consumer health check failed'
         assert isinstance(exc_info.value.__cause__, ServiceUnavailable)
+
+    def test_health_check_deadline_exceeded(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        gcp_consumer.subscriber.pull.side_effect = DeadlineExceeded("Deadline Exceeded")
+
+        gcp_consumer.health_check()
+
+        gcp_consumer.subscriber.pull.assert_called_once_with(
+            subscription=gcp_consumer._subscription_path,
+            max_messages=1,
+            retry=None,
+            timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+        )

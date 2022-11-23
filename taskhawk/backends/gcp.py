@@ -276,5 +276,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 retry=None,
                 timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             )
+        except DeadlineExceeded:
+            return
         except Exception as err:
             raise ConsumerHealthCheckFailed(f"Consumer health check failed") from err
