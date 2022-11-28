@@ -1,9 +1,7 @@
-import pytest
 from unittest import mock
 
-from taskhawk.consumer import process_messages_for_lambda_consumer, listen_for_messages, health_check
+from taskhawk.consumer import process_messages_for_lambda_consumer, listen_for_messages
 from taskhawk.models import Priority
-from taskhawk.exceptions import ConsumerHealthCheckFailed
 
 
 @mock.patch('taskhawk.consumer.get_consumer_backend', autospec=True)
@@ -30,22 +28,3 @@ class TestListenForMessages:
         mock_get_backend.return_value.fetch_and_process_messages.assert_called_once_with(
             num_messages=num_messages, visibility_timeout=visibility_timeout_s
         )
-
-
-@mock.patch('taskhawk.consumer.get_consumer_backend', autospec=True)
-def test_health_check_success(mock_get_backend):
-    health_check()
-
-    mock_get_backend.assert_called_once_with()
-    mock_get_backend.return_value.health_check.assert_called_once_with()
-
-
-@mock.patch('taskhawk.consumer.get_consumer_backend', autospec=True)
-def test_health_check_failure(mock_get_backend):
-    mock_get_backend.return_value.health_check.side_effect = ConsumerHealthCheckFailed("Test")
-
-    with pytest.raises(ConsumerHealthCheckFailed):
-        health_check()
-
-    mock_get_backend.assert_called_once_with()
-    mock_get_backend.return_value.health_check.assert_called_once_with()

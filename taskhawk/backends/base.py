@@ -165,9 +165,6 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
             _log_invalid_message(message_json)
             raise
 
-    def health_check(self) -> None:
-        raise NotImplementedError
-
     @property
     def error_count(self) -> int:
         raise NotImplementedError

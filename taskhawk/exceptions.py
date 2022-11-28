@@ -48,11 +48,3 @@ class TaskNotFound(Exception):
     """
 
     pass
-
-
-class ConsumerHealthCheckFailed(Exception):
-    """
-    Consumer health check failed
-    """
-
-    pass
