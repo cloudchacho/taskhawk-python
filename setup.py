@@ -81,6 +81,7 @@ setup(
             'docutils<0.18; python_version < "3.8.0"',
             'Sphinx==3.2.1; python_version < "3.8.0"',
             'Sphinx>3; python_version >= "3.8.0"',
+            'jinja2<3.1; python_version == "3.7.0"',
             'pip-tools',
             'wheel',
             'boto3-stubs[sns,sqs]',
