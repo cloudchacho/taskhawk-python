@@ -1,5 +1,6 @@
 import itertools
 import threading
+from typing import Optional
 
 from taskhawk.backends.utils import get_consumer_backend
 from taskhawk.models import Priority
@@ -23,9 +24,9 @@ def process_messages_for_lambda_consumer(lambda_event: dict) -> None:
 def listen_for_messages(
     priority: Priority,
     num_messages: int = 1,
-    visibility_timeout_s: int = None,
-    loop_count: int = None,
-    shutdown_event: threading.Event = None,
+    visibility_timeout_s: Optional[int] = None,
+    loop_count: Optional[int] = None,
+    shutdown_event: Optional[threading.Event] = None,
 ) -> None:
     """
     Starts a Taskhawk listener for message types provided and calls the task function with given `args` and `kwargs`.

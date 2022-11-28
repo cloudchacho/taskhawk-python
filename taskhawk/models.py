@@ -2,6 +2,7 @@ import enum
 import time
 import typing
 import uuid
+from typing import Optional
 
 import arrow
 import arrow.parser
@@ -190,10 +191,10 @@ class Message:
         cls,
         task: str,
         priority: 'Priority',
-        args: tuple = None,
-        kwargs: dict = None,
-        msg_id: str = None,
-        headers: dict = None,
+        args: Optional[tuple] = None,
+        kwargs: Optional[dict] = None,
+        msg_id: Optional[str] = None,
+        headers: Optional[dict] = None,
     ) -> 'Message':
         """
         Creates Message object given type, schema version and data. This is typically used by the publisher code.
