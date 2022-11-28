@@ -59,8 +59,10 @@ decorator==5.1.1
     #   traitlets
 docopt==0.6.2
     # via coveralls
-docutils==0.18.1
-    # via sphinx
+docutils==0.17.1
+    # via
+    #   sphinx
+    #   taskhawk
 flake8==5.0.4
     # via taskhawk
 funcy==1.17
@@ -263,6 +265,8 @@ typed-ast==1.5.4
     # via
     #   black
     #   mypy
+types-dataclasses==0.6.6
+    # via taskhawk
 types-s3transfer==0.6.0.post2
     # via boto3-stubs
 typing-extensions==4.1.1

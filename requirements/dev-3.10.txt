@@ -265,6 +265,8 @@ types-awscrt==0.15.3
     # via
     #   botocore-stubs
     #   types-s3transfer
+types-dataclasses==0.6.6
+    # via taskhawk
 types-s3transfer==0.6.0.post5
     # via boto3-stubs
 types-toml==0.10.8.1

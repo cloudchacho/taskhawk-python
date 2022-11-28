@@ -78,11 +78,13 @@ setup(
         'gcp': ['google-cloud-pubsub>=2.0.0', 'grpcio-status==1.48.2'],
         'dev': [
             'flake8',
+            'docutils<0.18; python_version < "3.8.0"',
             'Sphinx==3.2.1; python_version < "3.8.0"',
             'Sphinx>3; python_version >= "3.8.0"',
             'pip-tools',
             'wheel',
             'boto3-stubs[sns,sqs]',
+            'types-dataclasses',
         ],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
