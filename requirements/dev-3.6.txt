@@ -234,7 +234,7 @@ six==1.16.0
     #   traitlets
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==3.2.1; extra == "dev"
+sphinx==3.2.1; python_version < "3.8.0" and extra == "dev"
     # via taskhawk
 sphinxcontrib-applehelp==1.0.2
     # via sphinx

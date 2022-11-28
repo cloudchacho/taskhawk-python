@@ -96,6 +96,8 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==5.1.0
+    # via sphinx
 iniconfig==1.1.1
     # via pytest
 ipdb==0.13.9
@@ -229,7 +231,7 @@ six==1.16.0
     #   retrying
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==3.2.1
+sphinx==5.3.0
     # via taskhawk
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
@@ -291,6 +293,8 @@ wheel==0.38.4
     #   taskhawk
 xmltodict==0.13.0
     # via moto
+zipp==3.11.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

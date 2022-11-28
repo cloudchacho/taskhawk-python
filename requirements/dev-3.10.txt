@@ -229,7 +229,7 @@ six==1.16.0
     #   retrying
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==3.2.1
+sphinx==5.3.0
     # via taskhawk
 sphinxcontrib-applehelp==1.0.2
     # via sphinx

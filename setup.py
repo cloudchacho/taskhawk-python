@@ -76,7 +76,14 @@ setup(
     extras_require={
         'aws': ['boto3', 'retrying'],
         'gcp': ['google-cloud-pubsub>=2.0.0', 'grpcio-status==1.48.2'],
-        'dev': ['flake8', 'Sphinx==3.2.1', 'pip-tools', 'wheel', 'boto3-stubs[sns,sqs]'],
+        'dev': [
+            'flake8',
+            'Sphinx==3.2.1; python_version < "3.8.0"',
+            'Sphinx>3; python_version >= "3.8.0"',
+            'pip-tools',
+            'wheel',
+            'boto3-stubs[sns,sqs]',
+        ],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },
