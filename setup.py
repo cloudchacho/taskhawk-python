@@ -75,8 +75,8 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         'aws': ['boto3', 'retrying'],
-        'gcp': ['google-cloud-pubsub>=2.0.0'],
-        'dev': ['flake8', 'Sphinx>=1.7.2', 'pip-tools', 'wheel', 'boto3-stubs[sns,sqs]'],
+        'gcp': ['google-cloud-pubsub>=2.0.0', 'grpcio-status==1.48.2'],
+        'dev': ['flake8', 'Sphinx==3.2.1', 'pip-tools', 'wheel', 'boto3-stubs[sns,sqs]'],
         'test': tests_require,
         'publish': ['bumpversion', 'twine'],
     },
