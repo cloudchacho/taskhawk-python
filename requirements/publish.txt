@@ -46,10 +46,6 @@ six==1.16.0
     # via bleach
 twine==4.0.1
     # via -r requirements/publish.in
-typing-extensions==4.4.0
-    # via
-    #   importlib-metadata
-    #   rich
 urllib3==1.26.13
     # via
     #   requests
