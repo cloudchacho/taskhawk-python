@@ -147,6 +147,7 @@ class GooglePubSubPublisherBackend(GooglePubSubAsyncPublisherBackend):
 
 class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def __init__(self, priority: Priority, dlq=False) -> None:
+        self._error_count = 0
         self._publisher = None
         self._subscriber = None
         if not settings.TASKHAWK_SYNC:
@@ -174,21 +175,38 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 self._subscriber = pubsub_v1.SubscriberClient()
         return self._subscriber
 
+    @property
+    def error_count(self) -> int:
+        """
+        Returns the number of consecutive errors occurred when trying to pull messages from the queue.
+
+        Resets to 0 when a message is successfully pulled.
+
+        :return: Number of consecutive errors
+        """
+        return self._error_count
+
     def pull_messages(
         self, num_messages: int = 1, visibility_timeout: Optional[int] = None
     ) -> typing.List[ReceivedMessage]:
         try:
-            return self.subscriber.pull(
+            messages = self.subscriber.pull(
                 subscription=self._subscription_path,
                 max_messages=num_messages,
                 retry=None,
                 timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             ).received_messages
+
+            if self._error_count:
+                self._error_count = 0
+
+            return messages
         except DeadlineExceeded:
             logger.debug(f"Pulling deadline exceeded subscription={self._subscription_path}")
             return []
         except ServiceUnavailable as err:
             logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")
+            self._error_count += 1
             return []
 
     def process_message(self, queue_message: ReceivedMessage) -> None:

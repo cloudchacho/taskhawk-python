@@ -168,6 +168,10 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     def health_check(self) -> None:
         raise NotImplementedError
 
+    @property
+    def error_count(self) -> int:
+        raise NotImplementedError
+
 
 def _decimal_json_default(obj):
     if isinstance(obj, Decimal):
