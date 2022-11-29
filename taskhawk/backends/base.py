@@ -165,6 +165,10 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
             _log_invalid_message(message_json)
             raise
 
+    @property
+    def error_count(self) -> int:
+        raise NotImplementedError
+
 
 def _decimal_json_default(obj):
     if isinstance(obj, Decimal):

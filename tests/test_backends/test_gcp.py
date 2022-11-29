@@ -247,3 +247,55 @@ class TestGCPConsumer:
         )
         pre_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
         post_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
+
+    def test_error_count_increments(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        assert gcp_consumer.error_count == 0
+
+        gcp_consumer.subscriber.pull.side_effect = ServiceUnavailable("Service Unavailable")
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 1
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 2
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 3
+
+        gcp_consumer.subscriber.pull.assert_has_calls(
+            [
+                mock.call(
+                    subscription=gcp_consumer._subscription_path,
+                    max_messages=1,
+                    retry=None,
+                    timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+                )
+                for _ in range(3)
+            ]
+        )
+
+    def test_error_count_resets(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        gcp_consumer.subscriber.pull.side_effect = ServiceUnavailable("Service Unavailable")
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 1
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 2
+
+        gcp_consumer.subscriber.pull.side_effect = None
+
+        gcp_consumer.pull_messages(num_messages=1)
+        assert gcp_consumer.error_count == 0
+
+        gcp_consumer.subscriber.pull.assert_has_calls(
+            [
+                mock.call(
+                    subscription=gcp_consumer._subscription_path,
+                    max_messages=1,
+                    retry=None,
+                    timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
+                )
+                for _ in range(3)
+            ]
+        )
