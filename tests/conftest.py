@@ -2,8 +2,8 @@ import logging
 import time
 import uuid
 from contextlib import contextmanager
+from unittest import mock
 
-import mock
 import pytest
 
 # initialize tasks

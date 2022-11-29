@@ -4,7 +4,7 @@ import logging
 import typing
 from contextlib import contextmanager, ExitStack
 from datetime import datetime
-from typing import cast, Generator
+from typing import cast, Generator, Optional
 from unittest import mock
 
 from google.api_core.exceptions import DeadlineExceeded, ServiceUnavailable
@@ -173,7 +173,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 self._subscriber = pubsub_v1.SubscriberClient()
         return self._subscriber
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List[ReceivedMessage]:
+    def pull_messages(
+        self, num_messages: int = 1, visibility_timeout: Optional[int] = None
+    ) -> typing.List[ReceivedMessage]:
         try:
             return self.subscriber.pull(
                 subscription=self._subscription_path,
@@ -217,7 +219,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             subscription=self._subscription_path, ack_ids=[metadata.ack_id], ack_deadline_seconds=visibility_timeout_s
         )
 
-    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: int = None) -> None:
+    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
         """
         Re-queues everything in the Taskhawk DLQ back into the Taskhawk queue.
 

@@ -11,13 +11,14 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python_version: ['3.6', '3.7', '3.8', '3.9.0-beta.5']
+        python_version: ['3.6', '3.7', '3.8', '3.9', '3.10']
         isolated_backend_test: ['']
         include:
-          - python_version: '3.8'
+          - python_version: '3.9'
             isolated_backend_test: google
-          - python_version: '3.8'
+          - python_version: '3.9'
             isolated_backend_test: aws
     steps:
       - id: setup

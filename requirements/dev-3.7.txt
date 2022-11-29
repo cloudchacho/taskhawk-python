@@ -1,123 +1,312 @@
-alabaster==0.7.12         # via sphinx
-appdirs==1.4.4            # via black
-appnope==0.1.0            # via ipython
-arrow==0.16.0             # via taskhawk
-attrs==20.2.0             # via jsonschema, pytest
-aws-sam-translator==1.26.0  # via cfn-lint
-aws-xray-sdk==2.6.0       # via moto
-babel==2.8.0              # via sphinx
-backcall==0.2.0           # via ipython
-black==20.8b1             # via taskhawk
-boto3-stubs[sns,sqs]==1.14.63.0  # via taskhawk
-boto3==1.14.63            # via aws-sam-translator, moto, taskhawk
-boto==2.49.0              # via moto
-botocore==1.17.63         # via aws-xray-sdk, boto3, moto, s3transfer
-cachetools==4.1.1         # via google-auth
-certifi==2020.6.20        # via requests
-cffi==1.14.2              # via cryptography
-cfn-lint==0.36.0          # via moto
-chardet==3.0.4            # via requests
-click==7.1.2              # via black, pip-tools
-coverage==5.3             # via coveralls, pytest-cov, taskhawk
-coveralls==2.1.2          # via taskhawk
-cryptography==3.1         # via moto, python-jose, sshpubkeys
-decorator==4.4.2          # via ipython, networkx
-docker==4.3.1             # via moto
-docopt==0.6.2             # via coveralls
-docutils==0.15.2          # via botocore, sphinx
-ecdsa==0.14.1             # via moto, python-jose, sshpubkeys
-flake8==3.8.3             # via taskhawk
-funcy==1.14               # via taskhawk
-future==0.18.2            # via aws-xray-sdk
-google-api-core[grpc]==1.22.2  # via google-cloud-pubsub
-google-auth==1.21.2       # via google-api-core
-google-cloud-pubsub==2.0.0  # via taskhawk
-googleapis-common-protos[grpc]==1.52.0  # via google-api-core, grpc-google-iam-v1
-grpc-google-iam-v1==0.12.3  # via google-cloud-pubsub
-grpcio==1.32.0            # via google-api-core, googleapis-common-protos, grpc-google-iam-v1
-idna==2.10                # via moto, requests
-imagesize==1.2.0          # via sphinx
-importlib-metadata==1.7.0  # via flake8, jsonpickle, jsonschema, pluggy, pytest
-iniconfig==1.0.1          # via pytest
-ipdb==0.13.3              # via taskhawk
-ipython-genutils==0.2.0   # via traitlets
-ipython==7.18.1           # via ipdb
-jedi==0.17.2              # via ipython
-jinja2==2.11.2            # via moto, sphinx
-jmespath==0.10.0          # via boto3, botocore
-jsondiff==1.2.0           # via moto
-jsonpatch==1.26           # via cfn-lint
-jsonpickle==1.4.1         # via aws-xray-sdk
-jsonpointer==2.0          # via jsonpatch
-jsonschema==3.2.0         # via aws-sam-translator, cfn-lint
-junit-xml==1.9            # via cfn-lint
-libcst==0.3.10            # via google-cloud-pubsub
-markupsafe==1.1.1         # via jinja2, moto
-mccabe==0.6.1             # via flake8
-mock==4.0.2               # via moto
-more-itertools==8.5.0     # via moto, pytest
-moto==1.3.16              # via taskhawk
-mypy-boto3-sns==1.14.63.0  # via boto3-stubs
-mypy-boto3-sqs==1.14.63.0  # via boto3-stubs
-mypy-extensions==0.4.3    # via black, mypy, typing-inspect
-mypy==0.782               # via taskhawk
-networkx==2.5             # via cfn-lint
-packaging==20.4           # via pytest, sphinx
-parso==0.7.1              # via jedi
-pathspec==0.8.0           # via black
-pexpect==4.8.0            # via ipython
-pickleshare==0.7.5        # via ipython
-pip-tools==5.3.1          # via taskhawk
-pluggy==0.13.1            # via pytest
-prompt-toolkit==3.0.7     # via ipython
-proto-plus==1.9.1         # via google-cloud-pubsub
-protobuf==3.13.0          # via google-api-core, googleapis-common-protos, proto-plus
-ptyprocess==0.6.0         # via pexpect
-py==1.9.0                 # via pytest
-pyasn1-modules==0.2.8     # via google-auth
-pyasn1==0.4.8             # via pyasn1-modules, python-jose, rsa
-pycodestyle==2.6.0        # via flake8
-pycparser==2.20           # via cffi
-pyflakes==2.2.0           # via flake8
-pygments==2.7.0           # via ipython, sphinx
-pyparsing==2.4.7          # via packaging
-pyrsistent==0.17.3        # via jsonschema
-pytest-cov==2.10.1        # via taskhawk
-pytest-env==0.6.2         # via taskhawk
-pytest==6.0.2             # via pytest-cov, pytest-env, taskhawk
-python-dateutil==2.8.1    # via arrow, botocore, moto
-python-jose[cryptography]==3.2.0  # via moto
-pytz==2020.1              # via babel, google-api-core, moto
-pyyaml==5.3.1             # via cfn-lint, libcst, moto
-regex==2020.7.14          # via black
-requests==2.24.0          # via coveralls, docker, google-api-core, moto, responses, sphinx
-responses==0.12.0         # via moto
-retrying==1.3.3           # via taskhawk
-rsa==4.6                  # via google-auth, python-jose
-s3transfer==0.3.3         # via boto3
-six==1.15.0               # via aws-sam-translator, cfn-lint, cryptography, docker, ecdsa, google-api-core, google-auth, grpcio, jsonschema, junit-xml, moto, packaging, pip-tools, protobuf, python-dateutil, python-jose, responses, retrying, websocket-client
-snowballstemmer==2.0.0    # via sphinx
-sphinx==3.2.1             # via taskhawk
-sphinxcontrib-applehelp==1.0.2  # via sphinx
-sphinxcontrib-devhelp==1.0.2  # via sphinx
-sphinxcontrib-htmlhelp==1.0.3  # via sphinx
-sphinxcontrib-jsmath==1.0.1  # via sphinx
-sphinxcontrib-qthelp==1.0.3  # via sphinx
-sphinxcontrib-serializinghtml==1.1.4  # via sphinx
-sshpubkeys==3.1.0         # via moto
-toml==0.10.1              # via black, pytest
-traitlets==5.0.4          # via ipython
-typed-ast==1.4.1          # via black, mypy
-typing-extensions==3.7.4.3  # via black, boto3-stubs, libcst, mypy, mypy-boto3-sns, mypy-boto3-sqs, typing-inspect
-typing-inspect==0.6.0     # via libcst
-urllib3==1.25.10          # via botocore, requests, responses
-wcwidth==0.2.5            # via prompt-toolkit
-websocket-client==0.57.0  # via docker
-werkzeug==1.0.1           # via moto
-wheel==0.35.1             # via taskhawk
-wrapt==1.12.1             # via aws-xray-sdk
-xmltodict==0.12.0         # via moto
-zipp==3.1.0               # via importlib-metadata, moto
+    # via -r requirements/dev.in
+alabaster==0.7.12
+    # via sphinx
+appnope==0.1.3
+    # via ipython
+arrow==1.2.3
+    # via taskhawk
+attrs==22.1.0
+    # via pytest
+babel==2.11.0
+    # via sphinx
+backcall==0.2.0
+    # via ipython
+black==22.10.0
+    # via taskhawk
+boto3==1.26.17
+    # via
+    #   moto
+    #   taskhawk
+boto3-stubs[sns,sqs]==1.26.17
+    # via taskhawk
+botocore==1.29.17
+    # via
+    #   boto3
+    #   moto
+    #   s3transfer
+botocore-stubs==1.29.17
+    # via boto3-stubs
+build==0.9.0
+    # via pip-tools
+cachetools==5.2.0
+    # via google-auth
+certifi==2022.9.24
+    # via requests
+cffi==1.15.1
+    # via cryptography
+charset-normalizer==2.1.1
+    # via requests
+click==8.1.3
+    # via
+    #   black
+    #   pip-tools
+coverage[toml]==6.5.0
+    # via
+    #   coveralls
+    #   pytest-cov
+    #   taskhawk
+coveralls==3.3.1
+    # via taskhawk
+cryptography==38.0.4
+    # via moto
+decorator==5.1.1
+    # via
+    #   ipdb
+    #   ipython
+docopt==0.6.2
+    # via coveralls
+docutils==0.17.1
+    # via
+    #   sphinx
+    #   taskhawk
+exceptiongroup==1.0.4
+    # via pytest
+flake8==5.0.4
+    # via taskhawk
+funcy==1.17
+    # via taskhawk
+google-api-core[grpc]==2.10.2
+    # via google-cloud-pubsub
+google-auth==2.14.1
+    # via google-api-core
+google-cloud-pubsub==2.13.11
+    # via taskhawk
+googleapis-common-protos[grpc]==1.57.0
+    # via
+    #   google-api-core
+    #   grpc-google-iam-v1
+    #   grpcio-status
+grpc-google-iam-v1==0.12.4
+    # via google-cloud-pubsub
+grpcio==1.50.0
+    # via
+    #   google-api-core
+    #   google-cloud-pubsub
+    #   googleapis-common-protos
+    #   grpc-google-iam-v1
+    #   grpcio-status
+grpcio-status==1.48.2
+    # via
+    #   google-api-core
+    #   google-cloud-pubsub
+    #   taskhawk
+idna==3.4
+    # via requests
+imagesize==1.4.1
+    # via sphinx
+importlib-metadata==4.2.0
+    # via
+    #   build
+    #   click
+    #   flake8
+    #   moto
+    #   pep517
+    #   pluggy
+    #   pytest
+iniconfig==1.1.1
+    # via pytest
+ipdb==0.13.9
+    # via taskhawk
+ipython==7.34.0
+    # via ipdb
+jedi==0.18.2
+    # via ipython
+jinja2==3.0.3
+    # via
+    #   moto
+    #   sphinx
+    #   taskhawk
+jmespath==1.0.1
+    # via
+    #   boto3
+    #   botocore
+markupsafe==2.1.1
+    # via
+    #   jinja2
+    #   moto
+    #   werkzeug
+matplotlib-inline==0.1.6
+    # via ipython
+mccabe==0.7.0
+    # via flake8
+moto==4.0.10
+    # via taskhawk
+mypy==0.991
+    # via taskhawk
+mypy-boto3-sns==1.26.0.post1
+    # via boto3-stubs
+mypy-boto3-sqs==1.26.0.post1
+    # via boto3-stubs
+mypy-extensions==0.4.3
+    # via
+    #   black
+    #   mypy
+packaging==21.3
+    # via
+    #   build
+    #   pytest
+    #   sphinx
+parso==0.8.3
+    # via jedi
+pathspec==0.10.2
+    # via black
+pep517==0.13.0
+    # via build
+pexpect==4.8.0
+    # via ipython
+pickleshare==0.7.5
+    # via ipython
+pip-tools==6.10.0
+    # via taskhawk
+platformdirs==2.5.4
+    # via black
+pluggy==1.0.0
+    # via pytest
+prompt-toolkit==3.0.33
+    # via ipython
+proto-plus==1.22.1
+    # via google-cloud-pubsub
+protobuf==4.21.9
+    # via
+    #   google-api-core
+    #   google-cloud-pubsub
+    #   googleapis-common-protos
+    #   grpcio-status
+    #   proto-plus
+ptyprocess==0.7.0
+    # via pexpect
+pyasn1==0.4.8
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.2.8
+    # via google-auth
+pycodestyle==2.9.1
+    # via flake8
+pycparser==2.21
+    # via cffi
+pyflakes==2.5.0
+    # via flake8
+pygments==2.13.0
+    # via
+    #   ipython
+    #   sphinx
+pyparsing==3.0.9
+    # via packaging
+pytest==7.2.0
+    # via
+    #   pytest-cov
+    #   pytest-env
+    #   taskhawk
+pytest-cov==4.0.0
+    # via taskhawk
+pytest-env==0.8.1
+    # via taskhawk
+python-dateutil==2.8.2
+    # via
+    #   arrow
+    #   botocore
+    #   moto
+pytz==2022.6
+    # via
+    #   babel
+    #   moto
+requests==2.28.1
+    # via
+    #   coveralls
+    #   google-api-core
+    #   moto
+    #   responses
+    #   sphinx
+responses==0.22.0
+    # via moto
+retrying==1.3.4
+    # via taskhawk
+rsa==4.9
+    # via google-auth
+s3transfer==0.6.0
+    # via boto3
+six==1.16.0
+    # via
+    #   google-auth
+    #   grpcio
+    #   python-dateutil
+    #   retrying
+snowballstemmer==2.2.0
+    # via sphinx
+sphinx==3.2.1
+    # via taskhawk
+sphinxcontrib-applehelp==1.0.2
+    # via sphinx
+sphinxcontrib-devhelp==1.0.2
+    # via sphinx
+sphinxcontrib-htmlhelp==2.0.0
+    # via sphinx
+sphinxcontrib-jsmath==1.0.1
+    # via sphinx
+sphinxcontrib-qthelp==1.0.3
+    # via sphinx
+sphinxcontrib-serializinghtml==1.1.5
+    # via sphinx
+toml==0.10.2
+    # via
+    #   ipdb
+    #   responses
+tomli==2.0.1
+    # via
+    #   black
+    #   build
+    #   coverage
+    #   mypy
+    #   pep517
+    #   pytest
+traitlets==5.5.0
+    # via
+    #   ipython
+    #   matplotlib-inline
+typed-ast==1.5.4
+    # via
+    #   black
+    #   mypy
+types-awscrt==0.15.3
+    # via
+    #   botocore-stubs
+    #   types-s3transfer
+types-dataclasses==0.6.6
+    # via taskhawk
+types-s3transfer==0.6.0.post5
+    # via boto3-stubs
+types-toml==0.10.8.1
+    # via responses
+typing-extensions==4.4.0
+    # via
+    #   arrow
+    #   black
+    #   boto3-stubs
+    #   importlib-metadata
+    #   mypy
+    #   mypy-boto3-sns
+    #   mypy-boto3-sqs
+    #   responses
+urllib3==1.26.13
+    # via
+    #   botocore
+    #   requests
+    #   responses
+wcwidth==0.2.5
+    # via prompt-toolkit
+werkzeug==2.2.2
+    # via moto
+wheel==0.38.4
+    # via
+    #   pip-tools
+    #   taskhawk
+xmltodict==0.13.0
+    # via moto
+zipp==3.11.0
+    # via
+    #   importlib-metadata
+    #   pep517
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

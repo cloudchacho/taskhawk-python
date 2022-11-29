@@ -96,8 +96,6 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==5.1.0
-    # via sphinx
 iniconfig==1.1.1
     # via pytest
 ipdb==0.13.9
@@ -275,7 +273,6 @@ types-toml==0.10.8.1
     # via responses
 typing-extensions==4.4.0
     # via
-    #   black
     #   boto3-stubs
     #   mypy
     #   mypy-boto3-sns
@@ -295,8 +292,6 @@ wheel==0.38.4
     #   taskhawk
 xmltodict==0.13.0
     # via moto
-zipp==3.11.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

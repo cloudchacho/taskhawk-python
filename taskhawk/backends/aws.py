@@ -156,7 +156,7 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
     def _get_queue(self):
         return self.sqs_resource.get_queue_by_name(QueueName=self.queue_name)
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
+    def pull_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> typing.List:
         params = {
             'MaxNumberOfMessages': num_messages,
             'WaitTimeSeconds': self.WAIT_TIME_SECONDS,
@@ -184,7 +184,7 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
             QueueUrl=queue_url, ReceiptHandle=receipt, VisibilityTimeout=visibility_timeout_s
         )
 
-    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: int = None) -> None:
+    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
         """
         Re-queues everything in the Taskhawk DLQ back into the Taskhawk queue.
 
@@ -238,10 +238,10 @@ class AWSSNSConsumerBackend(TaskhawkConsumerBaseBackend):
     def extend_visibility_timeout(self, visibility_timeout_s: int, metadata) -> None:
         raise RuntimeError("invalid operation for backend")
 
-    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: int = None) -> None:
+    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
         raise RuntimeError("invalid operation for backend")
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
+    def pull_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> typing.List:
         raise RuntimeError("invalid operation for backend")
 
     def delete_message(self, queue_message) -> None:

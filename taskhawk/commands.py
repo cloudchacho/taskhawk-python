@@ -1,8 +1,12 @@
+from typing import Optional
+
 from taskhawk.backends.utils import get_consumer_backend
 from taskhawk.models import Priority
 
 
-def requeue_dead_letter(priority: Priority, num_messages: int = 10, visibility_timeout: int = None) -> None:
+def requeue_dead_letter(
+    priority: Priority, num_messages: Optional[int] = 10, visibility_timeout: Optional[int] = None
+) -> None:
     """
     Re-queues everything in the Taskhawk DLQ back into the Taskhawk queue.
 

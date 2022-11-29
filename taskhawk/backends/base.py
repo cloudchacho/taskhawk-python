@@ -4,6 +4,7 @@ import logging
 import typing
 import uuid
 from decimal import Decimal
+from typing import Optional
 from unittest import mock
 
 from taskhawk.backends.import_utils import import_class
@@ -87,7 +88,7 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
 
         message.call_task()
 
-    def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> None:
+    def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> None:
         queue_messages = self.pull_messages(num_messages, visibility_timeout)
         for queue_message in queue_messages:
             try:
@@ -129,13 +130,13 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         """
         raise NotImplementedError
 
-    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: int = None) -> None:
+    def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
         """
         Re-queues everything in the Taskhawk DLQ back into the Taskhawk queue.
         """
         raise NotImplementedError
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: int = None) -> typing.List:
+    def pull_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> typing.List:
         """
         Pulls messages from the cloud for this app.
         :param num_messages:
