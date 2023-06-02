@@ -3,7 +3,7 @@ import json
 import logging
 import typing
 from contextlib import contextmanager, ExitStack
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import cast, Generator, Optional
 from unittest import mock
 
@@ -149,6 +149,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self._error_count = 0
         self._publisher = None
         self._subscriber = None
+        self.last_log_time = None
         if not settings.TASKHAWK_SYNC:
             cloud_project = get_google_cloud_project()
             self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
@@ -201,7 +202,13 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
 
             return messages
         except DeadlineExceeded:
+            # Only log DeadlineExceeded errors every 1 minute since it happens constantly when there are no messages in the queue
+            if self.last_log_time:
+                time_since_last_log = datetime.now() - self.last_log_time
+                if time_since_last_log < timedelta(minutes=1):
+                    return []
             logger.debug(f"Pulling deadline exceeded subscription={self._subscription_path}")
+            self.last_log_time = datetime.now()
             return []
         except ServiceUnavailable as err:
             logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")

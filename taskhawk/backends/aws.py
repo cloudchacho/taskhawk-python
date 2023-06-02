@@ -110,7 +110,6 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
     WAIT_TIME_SECONDS = 20
 
     def __init__(self, priority: Priority, dlq=False):
-
         self._sqs_resource: Optional[SQSServiceResource] = None
         self._sqs_client: Optional[SQSClient] = None
         self.queue_name = (
