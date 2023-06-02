@@ -3,7 +3,7 @@ import json
 import logging
 import typing
 from contextlib import contextmanager, ExitStack
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import cast, Generator, Optional
 from unittest import mock
 
@@ -149,6 +149,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self._error_count = 0
         self._publisher = None
         self._subscriber = None
+        self.last_log_time = datetime(1970, 1, 1)
         if not settings.TASKHAWK_SYNC:
             cloud_project = get_google_cloud_project()
             self._subscription_path: str = pubsub_v1.SubscriberClient.subscription_path(
@@ -189,6 +190,11 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self, num_messages: int = 1, visibility_timeout: Optional[int] = None
     ) -> typing.List[ReceivedMessage]:
         try:
+            # Only log that we're pulling messages every 1 minute so we know the process is ready and not hung but not on every message pull to keep it from being spammy
+            time_since_last_log = datetime.now() - self.last_log_time
+            if time_since_last_log > timedelta(minutes=1):
+                logging.info("Pulling new messages")
+                self.last_log_time = datetime.now()
             messages = self.subscriber.pull(
                 subscription=self._subscription_path,
                 max_messages=num_messages,
