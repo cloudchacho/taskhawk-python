@@ -190,6 +190,11 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self, num_messages: int = 1, visibility_timeout: Optional[int] = None
     ) -> typing.List[ReceivedMessage]:
         try:
+            # Only log that we're pulling messages every 1 minute so we know the process is ready and not hung but not on every message pull to keep it from being spammy
+            time_since_last_log = datetime.now() - self.last_log_time
+            if time_since_last_log > timedelta(minutes=1):
+                logging.info("Pulling new messages")
+                self.last_log_time = datetime.now()
             messages = self.subscriber.pull(
                 subscription=self._subscription_path,
                 max_messages=num_messages,
@@ -202,12 +207,7 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
 
             return messages
         except DeadlineExceeded:
-            # Only log DeadlineExceeded errors every 1 minute since it happens constantly when there are no messages in the queue
-            time_since_last_log = datetime.now() - self.last_log_time
-            if time_since_last_log < timedelta(minutes=1):
-                return []
             logger.debug(f"Pulling deadline exceeded subscription={self._subscription_path}")
-            self.last_log_time = datetime.now()
             return []
         except ServiceUnavailable as err:
             logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")
