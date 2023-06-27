@@ -37,6 +37,7 @@ _DEFAULTS = {
     'IS_LAMBDA_APP': False,
     'TASKHAWK_CONSUMER_BACKEND': None,
     'TASKHAWK_DEFAULT_HEADERS': 'taskhawk.conf.default_headers_hook',
+    'TASKHAWK_ERROR_COUNT_CHANGE_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_PRE_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_POST_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_PUBLISHER_BACKEND': None,
@@ -50,6 +51,7 @@ _DEFAULTS = {
 # List of settings that may be in string import notation.
 _IMPORT_STRINGS = (
     'TASKHAWK_DEFAULT_HEADERS',
+    'TASKHAWK_ERROR_COUNT_CHANGE_HOOK',
     'TASKHAWK_PRE_PROCESS_HOOK',
     'TASKHAWK_POST_PROCESS_HOOK',
     'TASKHAWK_TASK_CLASS',

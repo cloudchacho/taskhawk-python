@@ -145,8 +145,10 @@ class GooglePubSubPublisherBackend(GooglePubSubAsyncPublisherBackend):
 
 
 class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
+    _error_count: int
+
     def __init__(self, priority: Priority, dlq=False) -> None:
-        self._error_count = 0
+        self._init_error_count()
         self._publisher = None
         self._subscriber = None
         self.last_log_time = datetime(1970, 1, 1)
@@ -186,6 +188,18 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         """
         return self._error_count
 
+    @error_count.setter
+    def error_count(self, value):
+        """
+        Updates the number of consecutive errors occurred when trying to pull messages from the queue.
+        Triggers TASKHAWK_ERROR_COUNT_CHANGE_HOOK method if an error count value has changed.
+
+        """
+        changed = self._error_count != value
+        self._error_count = value
+        if changed:
+            self._call_error_count_change_hook()
+
     def pull_messages(
         self, num_messages: int = 1, visibility_timeout: Optional[int] = None
     ) -> typing.List[ReceivedMessage]:
@@ -202,16 +216,14 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                 timeout=settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
             ).received_messages
 
-            if self._error_count:
-                self._error_count = 0
-
+            self.error_count = 0
             return messages
         except DeadlineExceeded:
             logger.debug(f"Pulling deadline exceeded subscription={self._subscription_path}")
             return []
         except ServiceUnavailable as err:
             logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")
-            self._error_count += 1
+            self.error_count += 1
             return []
 
     def process_message(self, queue_message: ReceivedMessage) -> None:
@@ -287,3 +299,13 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                     )
 
             logging.info("Re-queued {} messages".format(len(queue_messages)))
+
+    def _init_error_count(self):
+        self._error_count = 0
+        self._call_error_count_change_hook()
+
+    def _call_error_count_change_hook(self):
+        try:
+            settings.TASKHAWK_ERROR_COUNT_CHANGE_HOOK(**self.error_count_change_hook_kwargs())
+        except Exception:
+            logger.exception('Exception in error count change hook', extra={'error_count': self.error_count})

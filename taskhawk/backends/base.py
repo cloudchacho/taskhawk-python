@@ -74,6 +74,9 @@ class TaskhawkPublisherBaseBackend(TaskhawkBaseBackend):
 
 
 class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
+    def error_count_change_hook_kwargs(self) -> dict:
+        return {"error_count": self.error_count}
+
     @staticmethod
     def pre_process_hook_kwargs(queue_message) -> dict:
         return {}
