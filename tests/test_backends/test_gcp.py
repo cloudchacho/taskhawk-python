@@ -85,6 +85,7 @@ class TestPubSubPublisher:
 
 pre_process_hook = mock.MagicMock()
 post_process_hook = mock.MagicMock()
+heartbeat_hook = mock.MagicMock()
 
 
 @pytest.fixture(name='reset_mocks')
@@ -249,6 +250,9 @@ class TestGCPConsumer:
         post_process_hook.assert_called_once_with(google_pubsub_message=queue_message)
 
     def test_error_count_increments(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        settings.clear_cache()
+        gcp_settings.TASKHAWK_HEARTBEAT_HOOK = 'tests.test_backends.test_gcp.heartbeat_hook'
+        heartbeat_hook.reset_mock()
         assert gcp_consumer.error_count == 0
 
         gcp_consumer.subscriber.pull.side_effect = ServiceUnavailable("Service Unavailable")
@@ -273,8 +277,12 @@ class TestGCPConsumer:
                 for _ in range(3)
             ]
         )
+        heartbeat_hook.assert_has_calls([mock.call(error_count=1), mock.call(error_count=2), mock.call(error_count=3)])
 
     def test_error_count_resets(self, mock_pubsub_v1, gcp_settings, gcp_consumer):
+        settings.clear_cache()
+        gcp_settings.TASKHAWK_HEARTBEAT_HOOK = 'tests.test_backends.test_gcp.heartbeat_hook'
+        heartbeat_hook.reset_mock()
         gcp_consumer.subscriber.pull.side_effect = ServiceUnavailable("Service Unavailable")
 
         gcp_consumer.pull_messages(num_messages=1)
@@ -299,3 +307,4 @@ class TestGCPConsumer:
                 for _ in range(3)
             ]
         )
+        heartbeat_hook.assert_has_calls([mock.call(error_count=1), mock.call(error_count=2), mock.call(error_count=0)])

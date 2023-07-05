@@ -74,6 +74,9 @@ class TaskhawkPublisherBaseBackend(TaskhawkBaseBackend):
 
 
 class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
+    def heartbeat_hook_kwargs(self) -> dict:
+        return {}
+
     @staticmethod
     def pre_process_hook_kwargs(queue_message) -> dict:
         return {}
