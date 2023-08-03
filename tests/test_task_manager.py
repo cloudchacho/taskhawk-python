@@ -1,8 +1,10 @@
+from typing import Optional
 from unittest import mock
 import uuid
 
 import pytest
 
+import taskhawk
 from taskhawk.task_manager import _ALL_TASKS, Task, task, AsyncInvocation
 from taskhawk.models import Priority
 from taskhawk.exceptions import ConfigurationError, TaskNotFound
@@ -148,6 +150,10 @@ class TestTask:
         pass
 
     @staticmethod
+    def f_valid_annotation(a, b, metadata: Optional[taskhawk.Metadata] = None):
+        pass
+
+    @staticmethod
     def f_invalid_annotation(a, b, metadata: int):
         pass
 
@@ -182,6 +188,10 @@ class TestTask:
     def test_constructor_disallow_args(self):
         with pytest.raises(ConfigurationError):
             Task(TestTask.f_args, Priority.default, 'name')
+
+    def test_constructor_good_annotation(self):
+        # shouldn't raise
+        Task(TestTask.f_valid_annotation, Priority.default, 'name')
 
     def test_constructor_bad_annotation(self):
         with pytest.raises(ConfigurationError):

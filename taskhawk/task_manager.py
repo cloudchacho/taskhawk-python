@@ -2,6 +2,7 @@ import copy
 import inspect
 import typing
 from concurrent.futures import Future
+from typing import Optional
 
 from taskhawk.conf import settings
 from taskhawk.exceptions import ConfigurationError, TaskNotFound
@@ -136,7 +137,11 @@ class Task:
                 # disallow use of *args
                 raise ConfigurationError("Use of *args is not allowed")
             elif p.name == "metadata":
-                if p.annotation is not inspect.Signature.empty and p.annotation is not Metadata:
+                if (
+                    p.annotation is not inspect.Signature.empty
+                    and p.annotation is not Metadata
+                    and p.annotation is not Optional[Metadata]
+                ):
                     raise ConfigurationError(f"Signature for 'metadata' param must be Metadata, not {p.annotation}")
                 self._accepts_metadata = True
             elif p.name == "headers":
