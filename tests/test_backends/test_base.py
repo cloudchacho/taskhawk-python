@@ -94,10 +94,12 @@ class TestFetchAndProcessMessages:
         consumer_backend.pull_messages.return_value = [mock.MagicMock()]
         consumer_backend.process_message = mock.MagicMock()
         consumer_backend.process_message.side_effect = Exception
+        consumer_backend.nack_message = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages()
 
         consumer_backend.pull_messages.return_value[0].delete.assert_not_called()
+        consumer_backend.nack_message.assert_called_once_with(consumer_backend.pull_messages.return_value[0])
 
     def test_ignore_delete_error(self, consumer_backend):
         queue_message = mock.MagicMock()

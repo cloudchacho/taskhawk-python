@@ -231,7 +231,9 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def nack_message(self, queue_message: ReceivedMessage) -> None:
         # https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions/pull#receivedmessage
         # A NACK is any call to subscriptions.modifyAckDeadline with a 0 deadline
-        self.subscriber.modify_ack_deadline(subscription=self._subscription_path, ack_ids=[queue_message.ack_id], ack_deadline_seconds=0)
+        self.subscriber.modify_ack_deadline(
+            subscription=self._subscription_path, ack_ids=[queue_message.ack_id], ack_deadline_seconds=0
+        )
 
     @staticmethod
     def pre_process_hook_kwargs(queue_message: ReceivedMessage) -> dict:
