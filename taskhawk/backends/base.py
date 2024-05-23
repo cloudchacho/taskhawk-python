@@ -107,13 +107,16 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
             except LoggingException as e:
                 # log with message and extra
                 logger.exception(str(e), extra=e.extra)
+                self.nack_message(queue_message)
                 continue
             except RetryException:
                 # Retry without logging exception
                 logger.info('Retrying due to exception')
+                self.nack_message(queue_message)
                 continue
             except Exception:
                 logger.exception('Exception while processing message')
+                self.nack_message(queue_message)
                 continue
 
             try:
@@ -156,6 +159,9 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         raise NotImplementedError
 
     def delete_message(self, queue_message) -> None:
+        raise NotImplementedError
+
+    def nack_message(self, queue_message) -> None:
         raise NotImplementedError
 
     @staticmethod
