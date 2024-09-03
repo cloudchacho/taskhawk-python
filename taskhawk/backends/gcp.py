@@ -228,11 +228,13 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def delete_message(self, queue_message: ReceivedMessage) -> None:
         self.subscriber.acknowledge(subscription=self._subscription_path, ack_ids=[queue_message.ack_id])
 
-    def nack_message(self, queue_message: ReceivedMessage) -> None:
+    def nack_message(self, queue_message: ReceivedMessage, visibility_s: int = 0) -> None:
         # https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions/pull#receivedmessage
         # A NACK is any call to subscriptions.modifyAckDeadline with a 0 deadline
+        if visibility_s < 0 or visibility_s > 600:
+            raise ValueError("Invalid visibility_s")
         self.subscriber.modify_ack_deadline(
-            subscription=self._subscription_path, ack_ids=[queue_message.ack_id], ack_deadline_seconds=0
+            subscription=self._subscription_path, ack_ids=[queue_message.ack_id], ack_deadline_seconds=visibility_s
         )
 
     @staticmethod

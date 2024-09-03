@@ -7,6 +7,17 @@ class RetryException(Exception):
     pass
 
 
+class DelayedRetryException(Exception):
+    """
+    Special exception that does not log an exception when it is received.
+    This is a retryable error that allows to set delay before message is available for retry attempt.
+    """
+
+    def __init__(self, delay_seconds: int, *args, **kwargs):
+        self.delay_seconds = delay_seconds
+        super().__init__(*args, **kwargs)
+
+
 class LoggingException(Exception):
     """
     An exception that allows passing additional logging info. `extra` must be a dict that will be passed to

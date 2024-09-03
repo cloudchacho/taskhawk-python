@@ -7,7 +7,7 @@ import pytest
 
 from taskhawk.backends.base import TaskhawkBaseBackend, TaskhawkConsumerBaseBackend, TaskhawkPublisherBaseBackend
 from taskhawk.models import Message, ValidationError, Priority
-from taskhawk.exceptions import LoggingException, RetryException, IgnoreException
+from taskhawk.exceptions import LoggingException, RetryException, IgnoreException, DelayedRetryException
 from taskhawk.backends import base
 from taskhawk.backends.utils import get_consumer_backend, get_publisher_backend
 
@@ -89,17 +89,29 @@ class TestFetchAndProcessMessages:
             [mock.call(x) for x in consumer_backend.pull_messages.return_value]
         )
 
-    def test_preserves_messages(self, consumer_backend):
+    @pytest.mark.parametrize(
+        'exception,call_kwargs',
+        [
+            (Exception(), {}),
+            (LoggingException("foo"), {}),
+            (DelayedRetryException(60), {"visibility_s": 60}),
+            (RetryException("retry"), {}),
+            (Exception("error"), {}),
+        ],
+    )
+    def test_preserves_messages(self, consumer_backend, exception, call_kwargs):
         consumer_backend.pull_messages = mock.MagicMock()
         consumer_backend.pull_messages.return_value = [mock.MagicMock()]
         consumer_backend.process_message = mock.MagicMock()
-        consumer_backend.process_message.side_effect = Exception
+        consumer_backend.process_message.side_effect = exception
         consumer_backend.nack_message = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages()
 
         consumer_backend.pull_messages.return_value[0].delete.assert_not_called()
-        consumer_backend.nack_message.assert_called_once_with(consumer_backend.pull_messages.return_value[0])
+        consumer_backend.nack_message.assert_called_once_with(
+            consumer_backend.pull_messages.return_value[0], **call_kwargs
+        )
 
     def test_ignore_delete_error(self, consumer_backend):
         queue_message = mock.MagicMock()
