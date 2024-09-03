@@ -4,7 +4,9 @@ class RetryException(Exception):
     This is a retryable error.
     """
 
-    pass
+    def __init__(self, delay_seconds: int = 0, *args, **kwargs):
+        self.delay_seconds = delay_seconds
+        super().__init__(*args, **kwargs)
 
 
 class LoggingException(Exception):

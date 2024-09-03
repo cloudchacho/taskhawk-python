@@ -89,17 +89,35 @@ class TestFetchAndProcessMessages:
             [mock.call(x) for x in consumer_backend.pull_messages.return_value]
         )
 
-    def test_preserves_messages(self, consumer_backend):
+    @pytest.mark.parametrize(
+        'exception,call_kwargs',
+        [
+            (Exception(), {}),
+            (LoggingException("foo"), {}),
+            (RetryException(delay_seconds=60), {"visibility_s": 60}),
+            (RetryException(), {}),
+            (Exception("error"), {}),
+        ],
+    )
+    def test_preserves_messages(self, consumer_backend, exception, call_kwargs):
         consumer_backend.pull_messages = mock.MagicMock()
         consumer_backend.pull_messages.return_value = [mock.MagicMock()]
         consumer_backend.process_message = mock.MagicMock()
-        consumer_backend.process_message.side_effect = Exception
+        consumer_backend.process_message.side_effect = exception
         consumer_backend.nack_message = mock.MagicMock()
+        consumer_backend.extend_visibility_timeout = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages()
 
         consumer_backend.pull_messages.return_value[0].delete.assert_not_called()
-        consumer_backend.nack_message.assert_called_once_with(consumer_backend.pull_messages.return_value[0])
+        if type(exception) == RetryException and exception.delay_seconds > 0:
+            consumer_backend.extend_visibility_timeout.assert_called_once_with(
+                call_kwargs["visibility_s"], consumer_backend.pull_messages.return_value[0].metadata
+            )
+        else:
+            consumer_backend.nack_message.assert_called_once_with(
+                consumer_backend.pull_messages.return_value[0], **call_kwargs
+            )
 
     def test_ignore_delete_error(self, consumer_backend):
         queue_message = mock.MagicMock()

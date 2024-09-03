@@ -109,10 +109,15 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 logger.exception(str(e), extra=e.extra)
                 self.nack_message(queue_message)
                 continue
-            except RetryException:
+            except RetryException as exc:
                 # Retry without logging exception
-                logger.info('Retrying due to exception')
-                self.nack_message(queue_message)
+                if exc.delay_seconds > 0:
+                    logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
+                    self.extend_visibility_timeout(exc.delay_seconds, queue_message.metadata)
+                    # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
+                else:
+                    logger.info('Retrying due to exception')
+                    self.nack_message(queue_message)
                 continue
             except Exception:
                 logger.exception('Exception while processing message')
