@@ -14,7 +14,6 @@ from taskhawk.exceptions import (
     IgnoreException,
     LoggingException,
     RetryException,
-    DelayedRetryException,
 )
 from taskhawk.models import Message
 
@@ -110,15 +109,14 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 logger.exception(str(e), extra=e.extra)
                 self.nack_message(queue_message)
                 continue
-            except DelayedRetryException as exc:
+            except RetryException as exc:
                 # Retry without logging exception
-                logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
-                self.nack_message(queue_message, visibility_s=exc.delay_seconds)
-                continue
-            except RetryException:
-                # Retry without logging exception
-                logger.info('Retrying due to exception')
-                self.nack_message(queue_message)
+                if exc.delay_seconds > 0:
+                    logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
+                    self.extend_visibility_timeout(exc.delay_seconds, queue_message.metadata)
+                else:
+                    logger.info('Retrying due to exception')
+                    self.nack_message(queue_message)
                 continue
             except Exception:
                 logger.exception('Exception while processing message')
@@ -167,7 +165,7 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     def delete_message(self, queue_message) -> None:
         raise NotImplementedError
 
-    def nack_message(self, queue_message, visibility_s: int = 0) -> None:
+    def nack_message(self, queue_message) -> None:
         raise NotImplementedError
 
     @staticmethod

@@ -173,11 +173,9 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
     def delete_message(self, queue_message) -> None:
         queue_message.delete()
 
-    def nack_message(self, queue_message, visibility_s: int = 0) -> None:
+    def nack_message(self, queue_message) -> None:
         # should operate like a nack https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html#terminating-message-visibility-timeout
-        if visibility_s < 0 or visibility_s > 43200:
-            raise ValueError("Invalid visibility_s")
-        queue_message.change_visibility(VisibilityTimeout=visibility_s)
+        queue_message.change_visibility(VisibilityTimeout=0)
 
     def extend_visibility_timeout(self, visibility_timeout_s: int, metadata: AWSMetadata) -> None:
         """

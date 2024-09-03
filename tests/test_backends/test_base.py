@@ -7,7 +7,7 @@ import pytest
 
 from taskhawk.backends.base import TaskhawkBaseBackend, TaskhawkConsumerBaseBackend, TaskhawkPublisherBaseBackend
 from taskhawk.models import Message, ValidationError, Priority
-from taskhawk.exceptions import LoggingException, RetryException, IgnoreException, DelayedRetryException
+from taskhawk.exceptions import LoggingException, RetryException, IgnoreException
 from taskhawk.backends import base
 from taskhawk.backends.utils import get_consumer_backend, get_publisher_backend
 
@@ -94,8 +94,8 @@ class TestFetchAndProcessMessages:
         [
             (Exception(), {}),
             (LoggingException("foo"), {}),
-            (DelayedRetryException(60), {"visibility_s": 60}),
-            (RetryException("retry"), {}),
+            (RetryException(delay_seconds=60), {"visibility_s": 60}),
+            (RetryException(), {}),
             (Exception("error"), {}),
         ],
     )
@@ -105,13 +105,19 @@ class TestFetchAndProcessMessages:
         consumer_backend.process_message = mock.MagicMock()
         consumer_backend.process_message.side_effect = exception
         consumer_backend.nack_message = mock.MagicMock()
+        consumer_backend.extend_visibility_timeout = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages()
 
         consumer_backend.pull_messages.return_value[0].delete.assert_not_called()
-        consumer_backend.nack_message.assert_called_once_with(
-            consumer_backend.pull_messages.return_value[0], **call_kwargs
-        )
+        if type(exception) == RetryException and exception.delay_seconds > 0:
+            consumer_backend.extend_visibility_timeout.assert_called_once_with(
+                call_kwargs["visibility_s"], consumer_backend.pull_messages.return_value[0].metadata
+            )
+        else:
+            consumer_backend.nack_message.assert_called_once_with(
+                consumer_backend.pull_messages.return_value[0], **call_kwargs
+            )
 
     def test_ignore_delete_error(self, consumer_backend):
         queue_message = mock.MagicMock()

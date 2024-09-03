@@ -4,16 +4,7 @@ class RetryException(Exception):
     This is a retryable error.
     """
 
-    pass
-
-
-class DelayedRetryException(Exception):
-    """
-    Special exception that does not log an exception when it is received.
-    This is a retryable error that allows to set delay before message is available for retry attempt.
-    """
-
-    def __init__(self, delay_seconds: int, *args, **kwargs):
+    def __init__(self, delay_seconds: int = 0, *args, **kwargs):
         self.delay_seconds = delay_seconds
         super().__init__(*args, **kwargs)
 
