@@ -1,8 +1,16 @@
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from taskhawk.models import Metadata
+
+
 class RetryException(Exception):
     """
     Special exception that does not log an exception when it is received.
     This is a retryable error.
     """
+
+    metadata: Optional["Metadata"] = None
 
     def __init__(self, delay_seconds: int = 0, *args, **kwargs):
         self.delay_seconds = delay_seconds

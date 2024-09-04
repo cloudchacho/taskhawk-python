@@ -100,20 +100,22 @@ class TestFetchAndProcessMessages:
         ],
     )
     def test_preserves_messages(self, consumer_backend, exception, call_kwargs):
+        if isinstance(exception, RetryException):
+            exception.metadata = mock.MagicMock()
         consumer_backend.pull_messages = mock.MagicMock()
         consumer_backend.pull_messages.return_value = [mock.MagicMock()]
         consumer_backend.process_message = mock.MagicMock()
         consumer_backend.process_message.side_effect = exception
         consumer_backend.nack_message = mock.MagicMock()
-        consumer_backend.extend_visibility_timeout = mock.MagicMock()
 
         consumer_backend.fetch_and_process_messages()
 
         consumer_backend.pull_messages.return_value[0].delete.assert_not_called()
         if type(exception) == RetryException and exception.delay_seconds > 0:
-            consumer_backend.extend_visibility_timeout.assert_called_once_with(
-                call_kwargs["visibility_s"], consumer_backend.pull_messages.return_value[0].metadata
+            exception.metadata.extend_visibility_timeout.assert_called_once_with(
+                call_kwargs["visibility_s"],
             )
+            consumer_backend.nack_message.assert_not_called()
         else:
             consumer_backend.nack_message.assert_called_once_with(
                 consumer_backend.pull_messages.return_value[0], **call_kwargs

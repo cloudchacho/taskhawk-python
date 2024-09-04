@@ -89,7 +89,12 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         message = self._build_message(message_json, provider_metadata)
         _log_received_message(message.as_dict())
 
-        message.call_task()
+        try:
+            return message.call_task()
+        except RetryException as exc:
+            # inject message metadata into the retry exception, metadata is required to extend message visibility
+            exc.metadata = message.metadata
+            raise exc
 
     def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> None:
         queue_messages = self.pull_messages(num_messages, visibility_timeout)
@@ -111,9 +116,9 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 continue
             except RetryException as exc:
                 # Retry without logging exception
-                if exc.delay_seconds > 0:
+                if exc.delay_seconds > 0 and exc.metadata is not None:
                     logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
-                    self.extend_visibility_timeout(exc.delay_seconds, queue_message.metadata)
+                    exc.metadata.extend_visibility_timeout(exc.delay_seconds)
                     # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
                 else:
                     logger.info('Retrying due to exception')
