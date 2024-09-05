@@ -111,13 +111,14 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 continue
             except RetryException as exc:
                 # Retry without logging exception
+                nack_message_kwargs = {}
                 if exc.delay_seconds > 0:
                     logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
-                    self.extend_visibility_timeout(exc.delay_seconds, queue_message.metadata)
-                    # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
+                    nack_message_kwargs['visibility_s'] = exc.delay_seconds
                 else:
                     logger.info('Retrying due to exception')
-                    self.nack_message(queue_message)
+                self.nack_message(queue_message, **nack_message_kwargs)
+                # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
                 continue
             except Exception:
                 logger.exception('Exception while processing message')
@@ -166,7 +167,7 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     def delete_message(self, queue_message) -> None:
         raise NotImplementedError
 
-    def nack_message(self, queue_message) -> None:
+    def nack_message(self, queue_message, visibility_s: int = 0) -> None:
         raise NotImplementedError
 
     @staticmethod
