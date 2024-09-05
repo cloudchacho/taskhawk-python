@@ -25,7 +25,7 @@ example, request id.
 
 **id**: task identifier. This represents a run of a task.
 
-**platform_metadata**: Platform specific metadata, for example SQS receipt or PubSub ack id. This may be used to
+**provider_metadata**: Platform specific metadata, for example SQS receipt or PubSub ack id. This may be used to
 extend message visibility if the task is running longer than expected using ``taskhawk.extend_visibility_timeout``.
 
 **priority**: the priority a task was dispatched with. This will be same as task's priority, unless priority was

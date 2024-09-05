@@ -161,19 +161,48 @@ class TestGCPConsumer:
             timeout=gcp_settings.GOOGLE_PUBSUB_READ_TIMEOUT_S,
         )
 
-    def test_success_extend_visibility_timeout(self, mock_pubsub_v1, gcp_consumer):
+    def test_success_extend_visibility_timeout_with_metadata(self, mock_pubsub_v1, gcp_consumer):
         visibility_timeout_s = 10
         ack_id = "dummy_ack_id"
         publish_time = arrow.utcnow().datetime
         delivery_attempt = 1
 
         gcp_consumer.extend_visibility_timeout(
-            visibility_timeout_s, GoogleMetadata(ack_id, publish_time, delivery_attempt)
+            visibility_timeout_s, metadata=GoogleMetadata(ack_id, publish_time, delivery_attempt)
         )
 
         gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with(
             subscription=gcp_consumer._subscription_path, ack_ids=[ack_id], ack_deadline_seconds=visibility_timeout_s
         )
+
+    def test_success_extend_visibility_timeout_with_message_queue(self, mock_pubsub_v1, gcp_consumer):
+        visibility_timeout_s = 10
+        ack_id = "dummy_ack_id"
+        queue_message = mock.MagicMock()
+        queue_message.ack_id = ack_id
+
+        gcp_consumer.extend_visibility_timeout(visibility_timeout_s, queue_message=queue_message)
+
+        gcp_consumer.subscriber.modify_ack_deadline.assert_called_once_with(
+            subscription=gcp_consumer._subscription_path, ack_ids=[ack_id], ack_deadline_seconds=visibility_timeout_s
+        )
+
+    def test_failure_extend_visibility_timeout_when_both_metadata_and_queue_message_given(
+        self, mock_pubsub_v1, gcp_consumer
+    ):
+        visibility_timeout_s = 10
+        ack_id = "dummy_ack_id"
+        publish_time = arrow.utcnow().datetime
+        delivery_attempt = 1
+        metadata = GoogleMetadata(ack_id, publish_time, delivery_attempt)
+        queue_message = mock.MagicMock()
+        queue_message.ack_id = ack_id
+
+        with pytest.raises(ValueError) as exc:
+            gcp_consumer.extend_visibility_timeout(visibility_timeout_s, metadata=metadata, queue_message=queue_message)
+
+        assert str(exc.value) == "Only one of metadata and queue_message must be given"
+        gcp_consumer.subscriber.modify_ack_deadline.assert_not_called()
 
     @pytest.mark.parametrize("visibility_timeout", [-1, 601])
     def test_failure_extend_visibility_timeout(self, visibility_timeout, mock_pubsub_v1, gcp_consumer):

@@ -243,16 +243,24 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
     def post_process_hook_kwargs(queue_message: ReceivedMessage) -> dict:
         return {'google_pubsub_message': queue_message}
 
-    def extend_visibility_timeout(self, visibility_timeout_s: int, metadata: GoogleMetadata) -> None:
+    def extend_visibility_timeout(
+        self,
+        visibility_timeout_s: int,
+        metadata: Optional[GoogleMetadata] = None,
+        queue_message: Optional[ReceivedMessage] = None,
+    ) -> None:
         """
         Extends visibility timeout of a message on a given priority queue for long running tasks.
         """
+        if not (bool(metadata) ^ bool(queue_message)):
+            raise ValueError("Only one of metadata and queue_message must be given")
+        ack_id = metadata.ack_id if metadata else queue_message.ack_id  # type: ignore
         if settings.TASKHAWK_SYNC:
             return
         if visibility_timeout_s < 0 or visibility_timeout_s > 600:
             raise ValueError("Invalid visibility_timeout_s")
         self.subscriber.modify_ack_deadline(
-            subscription=self._subscription_path, ack_ids=[metadata.ack_id], ack_deadline_seconds=visibility_timeout_s
+            subscription=self._subscription_path, ack_ids=[ack_id], ack_deadline_seconds=visibility_timeout_s
         )
         self._call_heartbeat_hook()
 

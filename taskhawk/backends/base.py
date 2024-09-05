@@ -4,7 +4,7 @@ import logging
 import typing
 import uuid
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 from unittest import mock
 
 from taskhawk.backends.import_utils import import_class
@@ -89,12 +89,7 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
         message = self._build_message(message_json, provider_metadata)
         _log_received_message(message.as_dict())
 
-        try:
-            return message.call_task()
-        except RetryException as exc:
-            # inject message metadata into the retry exception, metadata is required to extend message visibility
-            exc.metadata = message.metadata
-            raise exc
+        message.call_task()
 
     def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> None:
         queue_messages = self.pull_messages(num_messages, visibility_timeout)
@@ -116,9 +111,9 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
                 continue
             except RetryException as exc:
                 # Retry without logging exception
-                if exc.delay_seconds > 0 and exc.metadata is not None:
+                if exc.delay_seconds > 0:
                     logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
-                    exc.metadata.extend_visibility_timeout(exc.delay_seconds)
+                    self.extend_visibility_timeout(exc.delay_seconds, queue_message=queue_message)
                     # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
                 else:
                     logger.info('Retrying due to exception')
@@ -140,7 +135,9 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
             except Exception:
                 logger.exception('Exception while deleting message', extra={'queue_message': queue_message})
 
-    def extend_visibility_timeout(self, visibility_timeout_s: int, metadata) -> None:
+    def extend_visibility_timeout(
+        self, visibility_timeout_s: int, metadata: Optional[Any] = None, queue_message: Optional[Any] = None
+    ) -> None:
         """
         Extends visibility timeout of a message on a given priority queue for long running tasks.
         """
