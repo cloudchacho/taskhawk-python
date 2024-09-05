@@ -48,7 +48,7 @@ class TestMetadata:
 
         mock_get_consumer_backend.assert_called_once_with(priority=metadata.priority)
         mock_get_consumer_backend.return_value.extend_visibility_timeout.assert_called_once_with(
-            visibility_timeout_s, metadata.provider_metadata
+            visibility_timeout_s, metadata=metadata.provider_metadata
         )
 
 

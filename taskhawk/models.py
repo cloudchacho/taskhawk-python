@@ -96,7 +96,7 @@ class Metadata:
         Extends visibility timeout of a message for long running tasks.
         """
         consumer_backend = get_consumer_backend(priority=self.priority)
-        consumer_backend.extend_visibility_timeout(visibility_timeout_s, self.provider_metadata)
+        consumer_backend.extend_visibility_timeout(visibility_timeout_s, metadata=self.provider_metadata)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, self.__class__):

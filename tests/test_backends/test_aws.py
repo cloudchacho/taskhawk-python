@@ -139,17 +139,45 @@ class TestSQSConsumer:
             WaitTimeSeconds=consumer.WAIT_TIME_SECONDS,
         )
 
-    def test_extend_visibility_timeout(self, mock_boto3, consumer):
+    def test_extend_visibility_timeout_with_metadata(self, mock_boto3, consumer):
         visibility_timeout_s = 10
         receipt = "receipt"
         consumer.sqs_client.get_queue_url = mock.MagicMock(return_value={"QueueUrl": "DummyQueueUrl"})
 
-        consumer.extend_visibility_timeout(visibility_timeout_s, AWSMetadata(receipt))
+        consumer.extend_visibility_timeout(visibility_timeout_s, metadata=AWSMetadata(receipt))
 
         consumer.sqs_client.get_queue_url.assert_called_once_with(QueueName=consumer.queue_name)
         consumer.sqs_client.change_message_visibility.assert_called_once_with(
             QueueUrl='DummyQueueUrl', ReceiptHandle='receipt', VisibilityTimeout=10
         )
+
+    def test_extend_visibility_timeout_with_queue_message(self, mock_boto3, consumer):
+        visibility_timeout_s = 10
+        queue_message = mock.MagicMock()
+        queue_message.receipt_handle = "receipt"
+        consumer.sqs_client.get_queue_url = mock.MagicMock(return_value={"QueueUrl": "DummyQueueUrl"})
+
+        consumer.extend_visibility_timeout(visibility_timeout_s, queue_message=queue_message)
+
+        consumer.sqs_client.get_queue_url.assert_called_once_with(QueueName=consumer.queue_name)
+        consumer.sqs_client.change_message_visibility.assert_called_once_with(
+            QueueUrl='DummyQueueUrl', ReceiptHandle='receipt', VisibilityTimeout=10
+        )
+
+    def test_failure_extend_visibility_timeout_when_both_metadata_and_queue_message_given(self, mock_boto3, consumer):
+        visibility_timeout_s = 10
+        receipt = "receipt"
+        queue_message = mock.MagicMock()
+        queue_message.receipt_handle = receipt
+
+        with pytest.raises(ValueError) as exc:
+            consumer.extend_visibility_timeout(
+                visibility_timeout_s, metadata=AWSMetadata(receipt), queue_message=queue_message
+            )
+
+        assert str(exc.value) == "Only one of metadata and queue_message must be given"
+        consumer.sqs_client.get_queue_url.assert_not_called()
+        consumer.sqs_client.change_message_visibility.assert_not_called()
 
     def test_success_requeue_dead_letter(self, mock_boto3):
         consumer = aws.AWSSQSConsumerBackend(priority=Priority.default, dlq=True)

@@ -2,7 +2,7 @@ import json
 import logging
 import typing
 from concurrent.futures import Future
-from typing import Optional
+from typing import Any, Dict, Optional
 from unittest import mock
 
 import boto3
@@ -10,7 +10,7 @@ import funcy
 from botocore.config import Config
 from mypy_boto3_sns import SNSClient
 from mypy_boto3_sqs import SQSClient
-from mypy_boto3_sqs.service_resource import SQSServiceResource
+from mypy_boto3_sqs.service_resource import SQSServiceResource, Message as SQSMessage
 from retrying import retry
 
 from taskhawk.backends.base import (
@@ -155,7 +155,7 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
     def _get_queue(self):
         return self.sqs_resource.get_queue_by_name(QueueName=self.queue_name)
 
-    def pull_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> typing.List:
+    def pull_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> typing.List[SQSMessage]:
         params = {
             'MaxNumberOfMessages': num_messages,
             'WaitTimeSeconds': self.WAIT_TIME_SECONDS,
@@ -165,23 +165,30 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
             params['VisibilityTimeout'] = visibility_timeout
         return self._get_queue().receive_messages(**params)
 
-    def process_message(self, queue_message) -> None:
+    def process_message(self, queue_message: SQSMessage) -> None:
         message_json = queue_message.body
         receipt = queue_message.receipt_handle
         self.message_handler(message_json, AWSMetadata(receipt))
 
-    def delete_message(self, queue_message) -> None:
+    def delete_message(self, queue_message: SQSMessage) -> None:
         queue_message.delete()
 
-    def nack_message(self, queue_message) -> None:
+    def nack_message(self, queue_message: SQSMessage) -> None:
         # should operate like a nack https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html#terminating-message-visibility-timeout
         queue_message.change_visibility(VisibilityTimeout=0)
 
-    def extend_visibility_timeout(self, visibility_timeout_s: int, metadata: AWSMetadata) -> None:
+    def extend_visibility_timeout(
+        self,
+        visibility_timeout_s: int,
+        metadata: Optional[AWSMetadata] = None,
+        queue_message: Optional[SQSMessage] = None,
+    ) -> None:
         """
         Extends visibility timeout of a message on a given priority queue for long running tasks.
         """
-        receipt = metadata.receipt
+        if not (bool(metadata) ^ bool(queue_message)):
+            raise ValueError("Only one of metadata and queue_message must be given")
+        receipt = metadata.receipt if metadata else queue_message.receipt_handle  # type: ignore
         queue_url = self.sqs_client.get_queue_url(QueueName=self.queue_name)['QueueUrl']
         self.sqs_client.change_message_visibility(
             QueueUrl=queue_url, ReceiptHandle=receipt, VisibilityTimeout=visibility_timeout_s
@@ -229,16 +236,21 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
             logging.info("Re-queued {} messages".format(len(queue_messages)))
 
     @staticmethod
-    def pre_process_hook_kwargs(queue_message) -> dict:
+    def pre_process_hook_kwargs(queue_message: SQSMessage) -> dict:
         return {'sqs_queue_message': queue_message}
 
     @staticmethod
-    def post_process_hook_kwargs(queue_message) -> dict:
+    def post_process_hook_kwargs(queue_message: SQSMessage) -> dict:
         return {'sqs_queue_message': queue_message}
 
 
 class AWSSNSConsumerBackend(TaskhawkConsumerBaseBackend):
-    def extend_visibility_timeout(self, visibility_timeout_s: int, metadata) -> None:
+    def extend_visibility_timeout(
+        self,
+        visibility_timeout_s: int,
+        metadata: Optional[AWSMetadata] = None,
+        queue_message: Optional[Dict[str, Any]] = None,
+    ) -> None:
         raise RuntimeError("invalid operation for backend")
 
     def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
