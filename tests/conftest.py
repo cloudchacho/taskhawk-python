@@ -136,7 +136,8 @@ def consumer_backend(request):
 )
 def publisher_backend(request, mock_boto3):
     with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
-        yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
+        with mock.patch("taskhawk.backends.gcp.get_google_cloud_project", return_value="DUMMY_PROJECT_ID"):
+            yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
 
 
 @pytest.fixture()
