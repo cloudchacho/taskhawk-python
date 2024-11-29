@@ -1,14 +1,14 @@
 import json
-from time import time
 from unittest import mock
 
 import arrow
 import funcy
 import pytest
 
+from tests.helpers.gcp import build_gcp_received_message
+
 try:
     from google.api_core.exceptions import ServiceUnavailable
-    from google.cloud.pubsub_v1.types import PubsubMessage, ReceivedMessage
     from taskhawk.backends.gcp import GoogleMetadata
 except ImportError:
     pass
@@ -121,18 +121,6 @@ class TestGCPConsumer:
         assert gcp_consumer.subscriber == mock_pubsub_v1.SubscriberClient()
         assert gcp_consumer.publisher == mock_pubsub_v1.PublisherClient()
 
-    @staticmethod
-    def _build_gcp_received_message(message):
-        queue_message = mock.create_autospec(ReceivedMessage)
-        queue_message.ack_id = "dummy_ack_id"
-        queue_message.message = mock.create_autospec(PubsubMessage)
-        queue_message.message.message_id = str(time())
-        queue_message.message.data = json.dumps(message.as_dict()).encode()
-        queue_message.message.attributes = message.as_dict()['headers']
-        queue_message.message.publish_time = arrow.utcnow().datetime
-        queue_message.delivery_attempt = 1
-        return queue_message
-
     def test_pull_messages(self, mock_pubsub_v1, gcp_consumer, gcp_settings):
         num_messages = 1
         visibility_timeout = 10
@@ -223,7 +211,7 @@ class TestGCPConsumer:
         num_messages = 1
         visibility_timeout = 4
 
-        queue_message = self._build_gcp_received_message(message)
+        queue_message = build_gcp_received_message(message)
         gcp_consumer.pull_messages = mock.MagicMock(side_effect=iter([[queue_message], None]))
 
         gcp_consumer.requeue_dead_letter(num_messages=num_messages, visibility_timeout=visibility_timeout)
@@ -252,7 +240,7 @@ class TestGCPConsumer:
         num_messages = 3
         visibility_timeout = 4
 
-        queue_message = self._build_gcp_received_message(message)
+        queue_message = build_gcp_received_message(message)
         received_messages = mock.MagicMock()
         received_messages.received_messages = [queue_message]
         gcp_consumer.subscriber.pull = mock.MagicMock(return_value=received_messages)

@@ -264,7 +264,8 @@ class AWSSNSConsumerBackend(TaskhawkConsumerBaseBackend):
 
     def process_messages(self, lambda_event):
         for record in lambda_event['Records']:
-            self.process_message(record)
+            with self._maybe_instrument(sns_record=record):
+                self.process_message(record)
 
     def process_message(self, queue_message) -> None:
         settings.TASKHAWK_PRE_PROCESS_HOOK(sns_record=queue_message)

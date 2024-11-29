@@ -1,9 +1,10 @@
 import json
-import uuid
 from unittest import mock
 
 import funcy
 import pytest
+
+from tests.helpers.aws import build_aws_sns_record
 
 try:
     from taskhawk.backends.aws import AWSMetadata
@@ -11,7 +12,7 @@ except ImportError:
     pass
 from taskhawk.backends.exceptions import PartialFailure
 from taskhawk.conf import settings
-from taskhawk.models import Priority
+from taskhawk.models import Priority, Message
 
 aws = pytest.importorskip('taskhawk.backends.aws')
 
@@ -274,8 +275,9 @@ class TestSQSConsumer:
 
 class TestSNSConsumer:
     @mock.patch('taskhawk.backends.aws.AWSSNSConsumerBackend.process_message')
-    def test_process_messages(self, mock_process_message):
-        records = mock.Mock(), mock.Mock()
+    def test_process_messages(self, mock_process_message, message):
+        record = build_aws_sns_record(message)
+        records = [record, record]
         event = {'Records': records}
 
         consumer = aws.AWSSNSConsumerBackend()
@@ -283,37 +285,16 @@ class TestSNSConsumer:
 
         mock_process_message.assert_has_calls([mock.call(r) for r in records])
 
-    def test_success_process_message(self, mock_boto3, settings, reset_mocks):
+    def test_success_process_message(self, mock_boto3, settings, reset_mocks, message):
         settings.TASKHAWK_PRE_PROCESS_HOOK = 'tests.test_backends.test_aws.pre_process_hook'
         settings.TASKHAWK_POST_PROCESS_HOOK = 'tests.test_backends.test_aws.post_process_hook'
         consumer = aws.AWSSNSConsumerBackend()
-        # copy from https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-sns
-        mock_record = {
-            "EventVersion": "1.0",
-            "EventSubscriptionArn": "arn",
-            "EventSource": "aws:sns",
-            "Sns": {
-                "SignatureVersion": "1",
-                "Timestamp": "1970-01-01T00:00:00.000Z",
-                "Signature": "EXAMPLE",
-                "SigningCertUrl": "EXAMPLE",
-                "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
-                "Message": "Hello from SNS!",
-                "MessageAttributes": {
-                    "request_id": {"Type": "String", "Value": str(uuid.uuid4())},
-                    "TestBinary": {"Type": "Binary", "Value": "TestBinary"},
-                },
-                "Type": "Notification",
-                "UnsubscribeUrl": "EXAMPLE",
-                "TopicArn": "arn",
-                "Subject": "TestInvoke",
-            },
-        }
-        message_mock = mock.MagicMock()
-        consumer._build_message = mock.MagicMock(return_value=message_mock)
+        message.call_task = mock.MagicMock()
+        sns_record = build_aws_sns_record(message)
 
-        consumer.process_message(mock_record)
+        with mock.patch.object(Message, 'call_task') as call_task_mock:
+            consumer.process_message(sns_record)
 
-        pre_process_hook.assert_called_once_with(sns_record=mock_record)
-        post_process_hook.assert_called_once_with(sns_record=mock_record)
-        message_mock.call_task.assert_called_once_with()
+            pre_process_hook.assert_called_once_with(sns_record=sns_record)
+            post_process_hook.assert_called_once_with(sns_record=sns_record)
+            call_task_mock.assert_called_once_with()

@@ -132,7 +132,7 @@ def consumer_backend(request):
 
 
 @pytest.fixture(
-    params=["taskhawk.backends.aws.AWSSNSConsumerBackend", "taskhawk.backends.gcp.GooglePubSubPublisherBackend"]
+    params=["taskhawk.backends.aws.AWSSNSPublisherBackend", "taskhawk.backends.gcp.GooglePubSubPublisherBackend"]
 )
 def publisher_backend(request, mock_boto3):
     with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
