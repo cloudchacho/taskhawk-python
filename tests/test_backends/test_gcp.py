@@ -5,11 +5,10 @@ import arrow
 import funcy
 import pytest
 
-from tests.helpers.gcp import build_gcp_received_message
-
 try:
     from google.api_core.exceptions import ServiceUnavailable
     from taskhawk.backends.gcp import GoogleMetadata
+    from tests.helpers.gcp import build_gcp_received_message
 except ImportError:
     pass
 from taskhawk.conf import settings

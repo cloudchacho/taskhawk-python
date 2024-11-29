@@ -105,8 +105,13 @@ def mock_pubsub_v1():
 
 
 @pytest.fixture(params=['aws', 'google'])
-def consumer_backend(request):
-    if request.param == 'aws':
+def backend_provider(request):
+    yield request.param
+
+
+@pytest.fixture
+def consumer_backend(backend_provider):
+    if backend_provider == 'aws':
         try:
             import taskhawk.backends.aws  # noqa
 
@@ -117,7 +122,7 @@ def consumer_backend(request):
         except ImportError:
             pytest.skip("AWS backend not importable")
 
-    if request.param == 'google':
+    if backend_provider == 'google':
         try:
             import taskhawk.backends.gcp  # noqa
 
@@ -131,13 +136,19 @@ def consumer_backend(request):
             pytest.skip("Google backend not importable")
 
 
-@pytest.fixture(
-    params=["taskhawk.backends.aws.AWSSNSPublisherBackend", "taskhawk.backends.gcp.GooglePubSubPublisherBackend"]
-)
-def publisher_backend(request, mock_boto3):
-    with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
-        with mock.patch("taskhawk.backends.gcp.get_google_cloud_project", return_value="DUMMY_PROJECT_ID"):
-            yield TaskhawkBaseBackend.build(request.param, priority=Priority.default)
+@pytest.fixture
+def publisher_backend(backend_provider):
+    if backend_provider == 'aws':
+        pytest.importorskip("taskhawk.backends.aws")
+        with _mock_boto3():
+            yield TaskhawkBaseBackend.build("taskhawk.backends.aws.AWSSNSPublisherBackend", priority=Priority.default)
+    if backend_provider == 'google':
+        pytest.importorskip("taskhawk.backends.gcp")
+        with mock.patch("taskhawk.backends.gcp.pubsub_v1"):
+            with mock.patch("taskhawk.backends.gcp.get_google_cloud_project", return_value="DUMMY_PROJECT_ID"):
+                yield TaskhawkBaseBackend.build(
+                    "taskhawk.backends.gcp.GooglePubSubPublisherBackend", priority=Priority.default
+                )
 
 
 @pytest.fixture()

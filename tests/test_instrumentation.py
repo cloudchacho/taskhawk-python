@@ -8,11 +8,7 @@ from opentelemetry.trace import get_tracer, format_trace_id, get_current_span, f
 
 import taskhawk
 from taskhawk import task_manager
-from taskhawk.backends.aws import AWSSQSConsumerBackend, AWSMetadata, AWSSNSConsumerBackend
-from taskhawk.backends.gcp import GooglePubSubConsumerBackend
 from taskhawk.models import Message
-from tests.helpers.aws import build_aws_sqs_message, build_aws_sns_record
-from tests.helpers.gcp import build_gcp_received_message
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -46,14 +42,22 @@ def message_with_trace(message_data, trace_id):
 
 
 @pytest.fixture
-def queue_message_with_trace(message_with_trace, consumer_backend):
-    if isinstance(consumer_backend, GooglePubSubConsumerBackend):
-        return build_gcp_received_message(message_with_trace)
-    elif isinstance(consumer_backend, AWSSNSConsumerBackend):
-        return build_aws_sns_record(message_with_trace)
-    elif isinstance(consumer_backend, AWSSQSConsumerBackend):
-        message_with_trace.metadata.provider_metadata = AWSMetadata("receipt")
-        return build_aws_sqs_message(message_with_trace)
+def queue_message_with_trace(message_with_trace, consumer_backend, backend_provider):
+    if backend_provider == "aws":
+        from taskhawk.backends import aws
+        from tests.helpers.aws import build_aws_sns_record, build_aws_sqs_message
+
+        if isinstance(consumer_backend, aws.AWSSNSConsumerBackend):
+            return build_aws_sns_record(message_with_trace)
+        elif isinstance(consumer_backend, aws.AWSSQSConsumerBackend):
+            message_with_trace.metadata.provider_metadata = aws.AWSMetadata("receipt")
+            return build_aws_sqs_message(message_with_trace)
+    if backend_provider == "google":
+        from taskhawk.backends import gcp
+        from tests.helpers.gcp import build_gcp_received_message
+
+        if isinstance(consumer_backend, gcp.GooglePubSubConsumerBackend):
+            return build_gcp_received_message(message_with_trace)
     raise ValueError("Unsupported consumer backend type")
 
 
@@ -105,6 +109,9 @@ def test_fetch_and_process_message_follows_parent_trace(consumer_backend, queue_
 
 def test_aws_sns_consumer_process_messages_follows_parent_trace(message_with_trace, trace_id):
     aws = pytest.importorskip("taskhawk.backends.aws")
+
+    from tests.helpers.aws import build_aws_sns_record
+
     record = build_aws_sns_record(message_with_trace)
     consumer = aws.AWSSNSConsumerBackend()
     consumer.process_message = mock.MagicMock(side_effect=assert_trace_id_in_context(trace_id))

@@ -4,10 +4,9 @@ from unittest import mock
 import funcy
 import pytest
 
-from tests.helpers.aws import build_aws_sns_record
-
 try:
     from taskhawk.backends.aws import AWSMetadata
+    from tests.helpers.aws import build_aws_sns_record
 except ImportError:
     pass
 from taskhawk.backends.exceptions import PartialFailure
