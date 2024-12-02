@@ -3,8 +3,9 @@ import json
 import logging
 import typing
 import uuid
+from contextlib import contextmanager
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any, Dict, Iterator, Optional
 from unittest import mock
 
 from taskhawk.backends.import_utils import import_class
@@ -57,20 +58,29 @@ class TaskhawkPublisherBaseBackend(TaskhawkBaseBackend):
     ) -> typing.Union[str, Future]:
         raise NotImplementedError
 
+    @contextmanager
+    def _maybe_instrument(self, message: Message, instrumentation_headers: Dict) -> Iterator:
+        try:
+            import taskhawk.instrumentation
+
+            with taskhawk.instrumentation.on_publish(message, instrumentation_headers) as span:
+                yield span
+        except ImportError:
+            yield None
+
     def publish(self, message: Message) -> typing.Union[str, Future]:
         if settings.TASKHAWK_SYNC:
             self._dispatch_sync(message)
             return str(uuid.uuid4())
 
-        message_body = message.as_dict()
-        headers = {**message_body["headers"]}
-        payload = self.message_payload(message_body)
-
-        result = self._publish(message, payload, headers)
-
-        log_published_message(message_body, result)
-
-        return result
+        instrumentation_headers: Dict[str, str] = {}
+        with self._maybe_instrument(message, instrumentation_headers):
+            message_body = message.as_dict()
+            new_headers = {**message_body["headers"], **instrumentation_headers}
+            payload = self.message_payload(message_body)
+            result = self._publish(message, payload, new_headers)
+            log_published_message(message_body, result)
+            return result
 
 
 class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
@@ -88,52 +98,58 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     def message_handler(self, message_json: str, provider_metadata) -> None:
         message = self._build_message(message_json, provider_metadata)
         _log_received_message(message.as_dict())
+        self._maybe_update_instrumentation(message)
 
         message.call_task()
 
     def fetch_and_process_messages(self, num_messages: int = 1, visibility_timeout: Optional[int] = None) -> None:
         queue_messages = self.pull_messages(num_messages, visibility_timeout)
         for queue_message in queue_messages:
-            try:
-                settings.TASKHAWK_PRE_PROCESS_HOOK(**self.pre_process_hook_kwargs(queue_message))
-            except Exception:
-                logger.exception('Exception in post process hook for message', extra={'queue_message': queue_message})
-                continue
+            with self._maybe_instrument(**self.pre_process_hook_kwargs(queue_message)):
+                try:
+                    settings.TASKHAWK_PRE_PROCESS_HOOK(**self.pre_process_hook_kwargs(queue_message))
+                except Exception:
+                    logger.exception(
+                        'Exception in post process hook for message', extra={'queue_message': queue_message}
+                    )
+                    continue
 
-            try:
-                self.process_message(queue_message)
-            except IgnoreException:
-                logger.info('Ignoring task', extra={'queue_message': queue_message})
-            except LoggingException as e:
-                # log with message and extra
-                logger.exception(str(e), extra=e.extra)
-                self.nack_message(queue_message)
-                continue
-            except RetryException as exc:
-                # Retry without logging exception
-                if exc.delay_seconds > 0:
-                    logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
-                    self.extend_visibility_timeout(exc.delay_seconds, queue_message=queue_message)
-                    # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
-                else:
-                    logger.info('Retrying due to exception')
+                try:
+                    self.process_message(queue_message)
+                except IgnoreException:
+                    logger.info('Ignoring task', extra={'queue_message': queue_message})
+                except LoggingException as e:
+                    # log with message and extra
+                    logger.exception(str(e), extra=e.extra)
                     self.nack_message(queue_message)
-                continue
-            except Exception:
-                logger.exception('Exception while processing message')
-                self.nack_message(queue_message)
-                continue
+                    continue
+                except RetryException as exc:
+                    # Retry without logging exception
+                    if exc.delay_seconds > 0:
+                        logger.info(f'Retrying with delay {exc.delay_seconds} seconds')
+                        self.extend_visibility_timeout(exc.delay_seconds, queue_message=queue_message)
+                        # the `continue` below will prevent the `self.delete_message` call from deleting the message from the queue.
+                    else:
+                        logger.info('Retrying due to exception')
+                        self.nack_message(queue_message)
+                    continue
+                except Exception:
+                    logger.exception('Exception while processing message')
+                    self.nack_message(queue_message)
+                    continue
 
-            try:
-                settings.TASKHAWK_POST_PROCESS_HOOK(**self.post_process_hook_kwargs(queue_message))
-            except Exception:
-                logger.exception('Exception in post process hook for message', extra={'queue_message': queue_message})
-                continue
+                try:
+                    settings.TASKHAWK_POST_PROCESS_HOOK(**self.post_process_hook_kwargs(queue_message))
+                except Exception:
+                    logger.exception(
+                        'Exception in post process hook for message', extra={'queue_message': queue_message}
+                    )
+                    continue
 
-            try:
-                self.delete_message(queue_message)
-            except Exception:
-                logger.exception('Exception while deleting message', extra={'queue_message': queue_message})
+                try:
+                    self.delete_message(queue_message)
+                except Exception:
+                    logger.exception('Exception while deleting message', extra={'queue_message': queue_message})
 
     def extend_visibility_timeout(
         self, visibility_timeout_s: int, metadata: Optional[Any] = None, queue_message: Optional[Any] = None
@@ -184,6 +200,24 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     @property
     def error_count(self) -> int:
         raise NotImplementedError
+
+    @contextmanager
+    def _maybe_instrument(self, **kwargs) -> Iterator:
+        try:
+            import taskhawk.instrumentation
+
+            with taskhawk.instrumentation.on_receive(**kwargs) as span:
+                yield span
+        except ImportError:
+            yield None
+
+    def _maybe_update_instrumentation(self, message: Message) -> None:
+        try:
+            import taskhawk.instrumentation
+
+            taskhawk.instrumentation.on_message(message)
+        except ImportError:
+            pass
 
 
 def _decimal_json_default(obj):
