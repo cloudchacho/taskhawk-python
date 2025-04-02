@@ -109,6 +109,18 @@ It's recommended that this function be declared with ``**kwargs`` so it doesn't 
 
 optional; fully-qualified function name
 
+**TASKHAWK_HEARTBEAT_HOOK**
+
+A function which can be used to report the taskhawk consumer health state.
+
+optional; fully-qualified function name
+
+**TASKHAWK_HEARTBEAT_HOOK_SYNC_CALL_S**
+
+Specifies the period of time in seconds at which the heartbeat hook function will be called.
+
+optional; positive int or float
+
 **TASKHAWK_PRE_PROCESS_HOOK**
 
 A function which can used to plug into the message processing pipeline *before* any processing happens. This hook

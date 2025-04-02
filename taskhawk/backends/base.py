@@ -187,6 +187,12 @@ class TaskhawkConsumerBaseBackend(TaskhawkBaseBackend):
     def nack_message(self, queue_message) -> None:
         raise NotImplementedError
 
+    def call_heartbeat_hook(self):
+        try:
+            settings.TASKHAWK_HEARTBEAT_HOOK(**self.heartbeat_hook_kwargs())
+        except Exception:
+            logger.exception('Exception in heartbeat hook')
+
     @staticmethod
     def _build_message(message_json: str, provider_metadata) -> Message:
         try:

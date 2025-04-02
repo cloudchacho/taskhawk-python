@@ -38,6 +38,7 @@ _DEFAULTS = {
     'TASKHAWK_CONSUMER_BACKEND': None,
     'TASKHAWK_DEFAULT_HEADERS': 'taskhawk.conf.default_headers_hook',
     'TASKHAWK_HEARTBEAT_HOOK': 'taskhawk.conf.noop_hook',
+    'TASKHAWK_HEARTBEAT_HOOK_SYNC_CALL_S': None,
     'TASKHAWK_PRE_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_POST_PROCESS_HOOK': 'taskhawk.conf.noop_hook',
     'TASKHAWK_PUBLISHER_BACKEND': None,
