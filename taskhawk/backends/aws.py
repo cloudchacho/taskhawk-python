@@ -217,9 +217,11 @@ class AWSSQSConsumerBackend(TaskhawkConsumerBaseBackend):
                 Entries=[
                     funcy.merge(
                         {'Id': queue_message.message_id, 'MessageBody': queue_message.body},
-                        {'MessageAttributes': queue_message.message_attributes}
-                        if queue_message.message_attributes
-                        else {},
+                        (
+                            {'MessageAttributes': queue_message.message_attributes}
+                            if queue_message.message_attributes
+                            else {}
+                        ),
                     )
                     for queue_message in queue_messages
                 ]
