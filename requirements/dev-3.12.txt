@@ -1,91 +1,84 @@
-    # via -r requirements/dev.in
-aiocontextvars==0.2.2
-    # via opentelemetry-api
-alabaster==0.7.13
+    # via file:///home/marcin/projects/forks/taskhawk-python
+alabaster==1.0.0
     # via sphinx
-arrow==1.2.3
+arrow==1.3.0
     # via taskhawk
-attrs==22.2.0
-    # via pytest
-babel==2.11.0
+asttokens==3.0.0
+    # via stack-data
+babel==2.17.0
     # via sphinx
-backcall==0.2.0
-    # via ipython
-black==22.8.0
+black==25.1.0
     # via taskhawk
-boto3==1.23.10
+boto3==1.37.25
     # via
     #   moto
     #   taskhawk
-boto3-stubs[sns,sqs]==1.24.35
+boto3-stubs[sns,sqs]==1.37.25
     # via taskhawk
-botocore==1.26.10
+botocore==1.37.25
     # via
     #   boto3
     #   moto
     #   s3transfer
-botocore-stubs==1.27.35
+botocore-stubs==1.37.25
     # via boto3-stubs
-cachetools==4.2.4
+build==1.2.2.post1
+    # via pip-tools
+cachetools==5.5.2
     # via google-auth
-certifi==2024.8.30
+certifi==2025.1.31
     # via requests
-cffi==1.15.1
+cffi==1.17.1
     # via cryptography
-charset-normalizer==2.0.12
+charset-normalizer==3.4.1
     # via requests
-click==8.0.4
+click==8.1.8
     # via
     #   black
     #   pip-tools
-contextvars==2.4
-    # via aiocontextvars
-coverage[toml]==6.2
+coverage[toml]==7.8.0
     # via
     #   coveralls
     #   pytest-cov
     #   taskhawk
-coveralls==3.3.1
+coveralls==4.0.1
     # via taskhawk
-cryptography==40.0.2
+cryptography==44.0.2
     # via moto
-dataclasses==0.8
-    # via
-    #   black
-    #   opentelemetry-sdk
-    #   taskhawk
-    #   werkzeug
-decorator==5.1.1
+decorator==5.2.1
     # via
     #   ipdb
     #   ipython
-    #   traitlets
-deprecated==1.2.15
-    # via opentelemetry-api
+deprecated==1.2.18
+    # via
+    #   opentelemetry-api
+    #   opentelemetry-semantic-conventions
 docopt==0.6.2
     # via coveralls
-docutils==0.17.1
-    # via
-    #   sphinx
-    #   taskhawk
-flake8==5.0.4
+docutils==0.21.2
+    # via sphinx
+executing==2.2.0
+    # via stack-data
+flake8==7.2.0
     # via taskhawk
 funcy==2.0
     # via taskhawk
-google-api-core[grpc]==2.8.2
+google-api-core[grpc]==1.34.1
     # via google-cloud-pubsub
-google-auth==2.22.0
-    # via google-api-core
-google-cloud-pubsub==2.13.0
+google-auth==2.38.0
+    # via
+    #   google-api-core
+    #   google-cloud-pubsub
+google-cloud-pubsub==2.29.0
     # via taskhawk
-googleapis-common-protos[grpc]==1.56.3
+googleapis-common-protos[grpc]==1.69.2
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.12.4
+grpc-google-iam-v1==0.14.2
     # via google-cloud-pubsub
-grpcio==1.48.2
+grpcio==1.71.0
     # via
     #   google-api-core
     #   google-cloud-pubsub
@@ -101,220 +94,203 @@ idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
-immutables==0.19
-    # via contextvars
-importlib-metadata==4.2.0
-    # via
-    #   click
-    #   flake8
-    #   moto
-    #   pep517
-    #   pluggy
-    #   pytest
-iniconfig==1.1.1
+importlib-metadata==8.6.1
+    # via opentelemetry-api
+iniconfig==2.1.0
     # via pytest
 ipdb==0.13.13
     # via taskhawk
-ipython==7.16.3
+ipython==9.0.2
     # via ipdb
-ipython-genutils==0.2.0
-    # via traitlets
-jedi==0.17.2
+ipython-pygments-lexers==1.1.1
     # via ipython
-jinja2==3.0.3
+jedi==0.19.2
+    # via ipython
+jinja2==3.1.6
     # via
     #   moto
     #   sphinx
-jmespath==0.10.0
+jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-markupsafe==2.0.1
+markupsafe==3.0.2
     # via
     #   jinja2
-    #   moto
+    #   werkzeug
+matplotlib-inline==0.1.7
+    # via ipython
 mccabe==0.7.0
     # via flake8
-moto==4.0.13
+moto==4.2.14
     # via taskhawk
-mypy==0.971
+mypy==1.15.0
     # via taskhawk
-mypy-boto3-sns==1.24.0
+mypy-boto3-sns==1.37.0
     # via boto3-stubs
-mypy-boto3-sqs==1.24.0
+mypy-boto3-sqs==1.37.0
     # via boto3-stubs
 mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-opentelemetry-api==1.12.0
+opentelemetry-api==1.31.1
     # via
+    #   google-cloud-pubsub
     #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
     #   taskhawk
-opentelemetry-sdk==1.12.0
-    # via taskhawk
-opentelemetry-semantic-conventions==0.33b0
-    # via opentelemetry-sdk
-packaging==21.3
+opentelemetry-sdk==1.31.1
     # via
+    #   google-cloud-pubsub
+    #   taskhawk
+opentelemetry-semantic-conventions==0.52b1
+    # via opentelemetry-sdk
+packaging==24.2
+    # via
+    #   black
+    #   build
     #   pytest
     #   sphinx
-parso==0.7.1
+parso==0.8.4
     # via jedi
-pathspec==0.9.0
+pathspec==0.12.1
     # via black
-pep517==0.13.1
-    # via pip-tools
 pexpect==4.9.0
     # via ipython
-pickleshare==0.7.5
-    # via ipython
-pip-tools==6.4.0
+pip-tools==7.4.1
     # via taskhawk
-platformdirs==2.4.0
+platformdirs==4.3.7
     # via black
-pluggy==1.0.0
+pluggy==1.5.0
     # via pytest
-prompt-toolkit==3.0.36
+prompt-toolkit==3.0.50
     # via ipython
-proto-plus==1.23.0
+proto-plus==1.26.1
     # via google-cloud-pubsub
-protobuf==3.19.6
+protobuf==3.20.3
     # via
     #   google-api-core
     #   google-cloud-pubsub
     #   googleapis-common-protos
+    #   grpc-google-iam-v1
     #   grpcio-status
     #   proto-plus
 ptyprocess==0.7.0
     # via pexpect
-py==1.11.0
-    # via pytest
-pyasn1==0.5.1
+pure-eval==0.2.3
+    # via stack-data
+pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   rsa
-pyasn1-modules==0.3.0
+pyasn1-modules==0.4.2
     # via google-auth
-pycodestyle==2.9.1
+pycodestyle==2.13.0
     # via flake8
-pycparser==2.21
+pycparser==2.22
     # via cffi
-pyflakes==2.5.0
+pyflakes==3.3.2
     # via flake8
-pygments==2.14.0
+pygments==2.19.1
     # via
     #   ipython
+    #   ipython-pygments-lexers
     #   sphinx
-pyparsing==3.1.4
-    # via packaging
-pytest==7.0.1
+pyproject-hooks==1.2.0
+    # via
+    #   build
+    #   pip-tools
+pytest==8.3.5
     # via
     #   pytest-cov
     #   pytest-env
     #   taskhawk
-pytest-cov==4.0.0
+pytest-cov==6.1.0
     # via taskhawk
-pytest-env==0.6.2
+pytest-env==1.1.5
     # via taskhawk
 python-dateutil==2.9.0.post0
     # via
     #   arrow
     #   botocore
     #   moto
-pytz==2024.2
-    # via babel
-requests==2.27.1
+pyyaml==6.0.2
+    # via responses
+requests==2.32.3
     # via
     #   coveralls
     #   google-api-core
     #   moto
     #   responses
     #   sphinx
-responses==0.17.0
+responses==0.25.7
     # via moto
 retrying==1.3.4
     # via taskhawk
+roman-numerals-py==3.1.0
+    # via sphinx
 rsa==4.9
     # via google-auth
-s3transfer==0.5.2
+s3transfer==0.11.4
     # via boto3
-six==1.16.0
+six==1.17.0
     # via
-    #   google-auth
-    #   grpcio
     #   python-dateutil
-    #   responses
     #   retrying
-    #   traitlets
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==3.2.1; python_version < "3.8"
+sphinx==8.2.3
     # via taskhawk
-sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-applehelp==2.0.0
     # via sphinx
-sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-devhelp==2.0.0
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.0
+sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
-sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-qthelp==2.0.0
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-tomli==1.2.3
-    # via
-    #   black
-    #   coverage
-    #   ipdb
-    #   mypy
-    #   pep517
-    #   pytest
-traitlets==4.3.3
+stack-data==0.6.3
     # via ipython
-typed-ast==1.5.5
+traitlets==5.14.3
     # via
-    #   black
-    #   mypy
+    #   ipython
+    #   matplotlib-inline
+types-awscrt==0.24.2
+    # via botocore-stubs
 types-dataclasses==0.6.6
     # via taskhawk
-types-s3transfer==0.6.0.post2
+types-python-dateutil==2.9.0.20241206
+    # via arrow
+types-s3transfer==0.11.4
     # via boto3-stubs
-typing-extensions==4.1.1
+typing-extensions==4.13.0
     # via
-    #   arrow
-    #   black
-    #   boto3-stubs
-    #   botocore-stubs
-    #   immutables
-    #   importlib-metadata
     #   mypy
-    #   mypy-boto3-sns
-    #   mypy-boto3-sqs
     #   opentelemetry-sdk
-urllib3==1.26.20
+urllib3==2.3.0
     # via
     #   botocore
-    #   google-auth
     #   requests
     #   responses
 wcwidth==0.2.13
     # via prompt-toolkit
-werkzeug==2.0.3
+werkzeug==3.1.3
     # via moto
-wheel==0.37.1
+wheel==0.45.1
     # via
     #   pip-tools
     #   taskhawk
-wrapt==1.16.0
+wrapt==1.17.2
     # via deprecated
 xmltodict==0.14.2
     # via moto
-zipp==3.6.0
-    # via
-    #   importlib-metadata
-    #   pep517
+zipp==3.21.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

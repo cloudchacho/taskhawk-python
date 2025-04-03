@@ -3,6 +3,8 @@ import threading
 from typing import Optional
 
 from taskhawk.backends.utils import get_consumer_backend
+from taskhawk.conf import settings
+from taskhawk.heartbeat import start_periodic_heartbeat_hook_thread
 from taskhawk.models import Priority
 
 
@@ -53,6 +55,11 @@ def listen_for_messages(
         shutdown_event = threading.Event()
 
     consumer_backend = get_consumer_backend(priority=priority)
+    if settings.TASKHAWK_HEARTBEAT_HOOK_SYNC_CALL_S is not None:
+        start_periodic_heartbeat_hook_thread(
+            consumer_backend, settings.TASKHAWK_HEARTBEAT_HOOK_SYNC_CALL_S, shutdown_event
+        )
+
     for count in itertools.count():
         if (loop_count is None or count < loop_count) and not shutdown_event.is_set():
             consumer_backend.fetch_and_process_messages(

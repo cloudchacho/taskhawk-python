@@ -215,11 +215,8 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
             logger.debug(f"Service Unavailable while pulling exception={err}, subscription={self._subscription_path}")
             self._error_count += 1
             return []
-        finally:
-            self._call_heartbeat_hook()
 
     def process_message(self, queue_message: ReceivedMessage) -> None:
-        self._call_heartbeat_hook()
         self.message_handler(
             queue_message.message.data.decode(),
             GoogleMetadata(queue_message.ack_id, queue_message.message.publish_time, queue_message.delivery_attempt),
@@ -262,7 +259,6 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
         self.subscriber.modify_ack_deadline(
             subscription=self._subscription_path, ack_ids=[ack_id], ack_deadline_seconds=visibility_timeout_s
         )
-        self._call_heartbeat_hook()
 
     def requeue_dead_letter(self, num_messages: int = 10, visibility_timeout: Optional[int] = None) -> None:
         """
@@ -308,9 +304,3 @@ class GooglePubSubConsumerBackend(TaskhawkConsumerBaseBackend):
                     )
 
             logging.info("Re-queued {} messages".format(len(queue_messages)))
-
-    def _call_heartbeat_hook(self):
-        try:
-            settings.TASKHAWK_HEARTBEAT_HOOK(**self.heartbeat_hook_kwargs())
-        except Exception:
-            logger.exception('Exception in heartbeat hook')

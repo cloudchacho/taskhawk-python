@@ -1,88 +1,84 @@
-    # via -r requirements/dev.in
-alabaster==0.7.13
+    # via file:///home/marcin/projects/forks/taskhawk-python
+alabaster==1.0.0
     # via sphinx
 arrow==1.3.0
     # via taskhawk
-asttokens==2.4.1
+asttokens==3.0.0
     # via stack-data
-babel==2.16.0
+babel==2.17.0
     # via sphinx
-backcall==0.2.0
-    # via ipython
-black==22.10.0
+black==25.1.0
     # via taskhawk
-boto3==1.35.70
+boto3==1.37.25
     # via
     #   moto
     #   taskhawk
-boto3-stubs[sns,sqs]==1.35.70
+boto3-stubs[sns,sqs]==1.37.25
     # via taskhawk
-botocore==1.35.70
+botocore==1.37.25
     # via
     #   boto3
     #   moto
     #   s3transfer
-botocore-stubs==1.35.70
+botocore-stubs==1.37.25
     # via boto3-stubs
 build==1.2.2.post1
     # via pip-tools
-cachetools==5.5.0
+cachetools==5.5.2
     # via google-auth
-certifi==2024.8.30
+certifi==2025.1.31
     # via requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
-click==8.1.7
+click==8.1.8
     # via
     #   black
     #   pip-tools
-coverage[toml]==7.6.1
+coverage[toml]==7.8.0
     # via
     #   coveralls
     #   pytest-cov
     #   taskhawk
 coveralls==4.0.1
     # via taskhawk
-cryptography==43.0.3
+cryptography==44.0.2
     # via moto
-decorator==5.1.1
+decorator==5.2.1
     # via
     #   ipdb
     #   ipython
-deprecated==1.2.15
+deprecated==1.2.18
     # via
     #   opentelemetry-api
     #   opentelemetry-semantic-conventions
 docopt==0.6.2
     # via coveralls
-docutils==0.20.1
+docutils==0.21.2
     # via sphinx
-exceptiongroup==1.2.2
-    # via pytest
-executing==2.1.0
+executing==2.2.0
     # via stack-data
-flake8==7.1.1
+flake8==7.2.0
     # via taskhawk
 funcy==2.0
     # via taskhawk
-google-api-core[grpc]==2.23.0
+google-api-core[grpc]==1.34.1
     # via google-cloud-pubsub
-google-auth==2.36.0
+google-auth==2.38.0
     # via
     #   google-api-core
     #   google-cloud-pubsub
-google-cloud-pubsub==2.27.1
+google-cloud-pubsub==2.29.0
     # via taskhawk
-googleapis-common-protos[grpc]==1.66.0
+googleapis-common-protos[grpc]==1.69.2
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.13.1
+grpc-google-iam-v1==0.14.2
     # via google-cloud-pubsub
-grpcio==1.68.0
+grpcio==1.71.0
     # via
     #   google-api-core
     #   google-cloud-pubsub
@@ -98,20 +94,19 @@ idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==8.5.0
-    # via
-    #   build
-    #   opentelemetry-api
-    #   sphinx
-iniconfig==2.0.0
+importlib-metadata==8.6.1
+    # via opentelemetry-api
+iniconfig==2.1.0
     # via pytest
 ipdb==0.13.13
     # via taskhawk
-ipython==8.12.3
+ipython==9.0.2
     # via ipdb
+ipython-pygments-lexers==1.1.1
+    # via ipython
 jedi==0.19.2
     # via ipython
-jinja2==3.1.4
+jinja2==3.1.6
     # via
     #   moto
     #   sphinx
@@ -119,7 +114,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-markupsafe==2.1.5
+markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
@@ -129,27 +124,27 @@ mccabe==0.7.0
     # via flake8
 moto==4.2.14
     # via taskhawk
-mypy==1.13.0
+mypy==1.15.0
     # via taskhawk
-mypy-boto3-sns==1.35.68
+mypy-boto3-sns==1.37.0
     # via boto3-stubs
-mypy-boto3-sqs==1.35.0
+mypy-boto3-sqs==1.37.0
     # via boto3-stubs
 mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-opentelemetry-api==1.28.2
+opentelemetry-api==1.31.1
     # via
     #   google-cloud-pubsub
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   taskhawk
-opentelemetry-sdk==1.28.2
+opentelemetry-sdk==1.31.1
     # via
     #   google-cloud-pubsub
     #   taskhawk
-opentelemetry-semantic-conventions==0.49b2
+opentelemetry-semantic-conventions==0.52b1
     # via opentelemetry-sdk
 packaging==24.2
     # via
@@ -163,21 +158,17 @@ pathspec==0.12.1
     # via black
 pexpect==4.9.0
     # via ipython
-pickleshare==0.7.5
-    # via ipython
 pip-tools==7.4.1
     # via taskhawk
-platformdirs==4.3.6
+platformdirs==4.3.7
     # via black
 pluggy==1.5.0
     # via pytest
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via ipython
-proto-plus==1.25.0
-    # via
-    #   google-api-core
-    #   google-cloud-pubsub
-protobuf==5.28.3
+proto-plus==1.26.1
+    # via google-cloud-pubsub
+protobuf==3.20.3
     # via
     #   google-api-core
     #   google-cloud-pubsub
@@ -193,28 +184,29 @@ pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   rsa
-pyasn1-modules==0.4.1
+pyasn1-modules==0.4.2
     # via google-auth
-pycodestyle==2.12.1
+pycodestyle==2.13.0
     # via flake8
 pycparser==2.22
     # via cffi
-pyflakes==3.2.0
+pyflakes==3.3.2
     # via flake8
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   ipython
+    #   ipython-pygments-lexers
     #   sphinx
 pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==8.3.3
+pytest==8.3.5
     # via
     #   pytest-cov
     #   pytest-env
     #   taskhawk
-pytest-cov==5.0.0
+pytest-cov==6.1.0
     # via taskhawk
 pytest-env==1.1.5
     # via taskhawk
@@ -223,8 +215,6 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   moto
-pytz==2024.2
-    # via babel
 pyyaml==6.0.2
     # via responses
 requests==2.32.3
@@ -234,86 +224,76 @@ requests==2.32.3
     #   moto
     #   responses
     #   sphinx
-responses==0.25.3
+responses==0.25.7
     # via moto
 retrying==1.3.4
     # via taskhawk
+roman-numerals-py==3.1.0
+    # via sphinx
 rsa==4.9
     # via google-auth
-s3transfer==0.10.4
+s3transfer==0.11.4
     # via boto3
-six==1.16.0
+six==1.17.0
     # via
-    #   asttokens
     #   python-dateutil
     #   retrying
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.1.2
+sphinx==8.2.3
     # via taskhawk
-sphinxcontrib-applehelp==1.0.4
+sphinxcontrib-applehelp==2.0.0
     # via sphinx
-sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-devhelp==2.0.0
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.1
+sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
-sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-qthelp==2.0.0
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 stack-data==0.6.3
     # via ipython
-tomli==2.1.0
-    # via
-    #   black
-    #   build
-    #   coverage
-    #   ipdb
-    #   mypy
-    #   pip-tools
-    #   pytest
-    #   pytest-env
 traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-types-awscrt==0.23.1
+types-awscrt==0.24.2
     # via botocore-stubs
 types-dataclasses==0.6.6
     # via taskhawk
-types-python-dateutil==2.9.0.20241003
+types-python-dateutil==2.9.0.20241206
     # via arrow
-types-s3transfer==0.10.4
+types-s3transfer==0.11.4
     # via boto3-stubs
-typing-extensions==4.12.2
+typing-extensions==4.13.0
     # via
-    #   black
     #   boto3-stubs
     #   ipython
     #   mypy
     #   mypy-boto3-sns
     #   mypy-boto3-sqs
     #   opentelemetry-sdk
-urllib3==1.26.20
+urllib3==2.3.0
     # via
     #   botocore
     #   requests
     #   responses
 wcwidth==0.2.13
     # via prompt-toolkit
-werkzeug==3.0.6
+werkzeug==3.1.3
     # via moto
 wheel==0.45.1
     # via
     #   pip-tools
     #   taskhawk
-wrapt==1.17.0
+wrapt==1.17.2
     # via deprecated
 xmltodict==0.14.2
     # via moto
-zipp==3.20.2
+zipp==3.21.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

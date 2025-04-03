@@ -28,3 +28,18 @@ class TestListenForMessages:
         mock_get_backend.return_value.fetch_and_process_messages.assert_called_once_with(
             num_messages=num_messages, visibility_timeout=visibility_timeout_s
         )
+
+    def test_listen_for_messages_with_periodic_heartbeat_thread(self, mock_get_backend, settings):
+        num_messages = 3
+        visibility_timeout_s = 4
+        loop_count = 1
+        priority = Priority.default
+        settings.TASKHAWK_HEARTBEAT_HOOK_SYNC_CALL_S = 1
+
+        listen_for_messages(priority, num_messages, visibility_timeout_s, loop_count)
+
+        mock_get_backend.assert_called_once_with(priority=priority)
+        mock_get_backend.return_value.fetch_and_process_messages.assert_called_once_with(
+            num_messages=num_messages, visibility_timeout=visibility_timeout_s
+        )
+        mock_get_backend.return_value.call_heartbeat_hook.assert_called_once_with()
